@@ -9,11 +9,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/denton" rel="stylesheet">
     <style>
+        :root {
+            --font-serif: 'Denton', 'DM Serif Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --color-accent: #F5AFAF;
+            --color-bg: #FCF8F8;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fcfbf8;
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
             color: #4a4a4a;
+            -webkit-font-smoothing: antialiased;
+        }
+        h1, h2, h3, .font-serif {
+            font-family: var(--font-serif);
         }
         .calendar-grid {
             display: grid;
@@ -26,6 +37,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Month Transition Animation */
+        .month-transition {
+            animation: monthFade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes monthFade {
+            from { opacity: 0; transform: scale(0.98); filter: blur(4px); }
+            to { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -48,6 +69,16 @@
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.15); opacity: 0.6; }
             100% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .denton-title {
+            font-family: var(--font-serif);
+            font-weight: 700;
+        }
+
+        /* Prevent scroll jump on content change */
+        main {
+            min-height: 60vh;
         }
     </style>
 <script type="importmap">

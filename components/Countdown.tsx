@@ -3,18 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { CalendarEvent, CountdownState } from '../types';
 
 interface CountdownProps {
-  targetEvent: CalendarEvent | null;
+  upcomingEvents: CalendarEvent[];
 }
 
-const Countdown: React.FC<CountdownProps> = ({ targetEvent }) => {
+const CountdownItem: React.FC<{ targetEvent: CalendarEvent }> = ({ targetEvent }) => {
   const [timeLeft, setTimeLeft] = useState<CountdownState | null>(null);
 
   useEffect(() => {
-    if (!targetEvent) {
-      setTimeLeft(null);
-      return;
-    }
-
     const timer = setInterval(() => {
       const now = new Date().getTime();
       const target = new Date(`${targetEvent.date}T${targetEvent.time || '00:00'}`).getTime();
@@ -37,51 +32,83 @@ const Countdown: React.FC<CountdownProps> = ({ targetEvent }) => {
     return () => clearInterval(timer);
   }, [targetEvent]);
 
-  if (!targetEvent || !timeLeft) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-stone-300 border border-dashed border-stone-200 rounded-[2rem] max-w-sm mx-auto bg-stone-50/30">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p className="text-[10px] tracking-[0.25em] uppercase italic">No moments pending</p>
-      </div>
-    );
-  }
+  if (!timeLeft) return null;
 
   const TimeBlock = ({ value, label }: { value: number; label: string }) => (
-    <div className="flex flex-col items-center">
-      <span className="text-5xl md:text-6xl font-extralight text-stone-800 tabular-nums tracking-tighter">
+    <div className="flex items-baseline gap-1">
+      <span className="text-xl font-medium text-stone-700 tabular-nums">
         {value.toString().padStart(2, '0')}
       </span>
-      <span className="text-[9px] uppercase tracking-[0.3em] text-stone-400 mt-2 font-medium">{label}</span>
+      <span className="text-[7px] uppercase tracking-[0.1em] text-stone-400 font-bold">{label[0]}</span>
     </div>
   );
 
   return (
-    <div className="flex flex-col items-center fade-in px-4">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="h-px w-4 bg-stone-200"></div>
-        <div className="flex items-center gap-2 text-stone-400 text-[10px] tracking-[0.35em] uppercase font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Upcoming
+    <div className="flex items-center gap-3">
+      <TimeBlock value={timeLeft.days} label="Days" />
+      <span className="text-stone-200 text-xs font-light">:</span>
+      <TimeBlock value={timeLeft.hours} label="Hours" />
+      <span className="text-stone-200 text-xs font-light">:</span>
+      <TimeBlock value={timeLeft.minutes} label="Min" />
+      <span className="text-stone-200 text-xs font-light">:</span>
+      <TimeBlock value={timeLeft.seconds} label="Sec" />
+    </div>
+  );
+};
+
+const Countdown: React.FC<CountdownProps> = ({ upcomingEvents }) => {
+  if (upcomingEvents.length === 0) {
+    return (
+      <div className="flex items-center justify-center gap-3 py-4 text-stone-300 max-w-xs mx-auto">
+        <div className="w-1 h-1 rounded-full bg-stone-200"></div>
+        <p className="text-[9px] tracking-[0.3em] uppercase italic font-medium">Awaiting the next moment</p>
+        <div className="w-1 h-1 rounded-full bg-stone-200"></div>
+      </div>
+    );
+  }
+
+  const mainEvent = upcomingEvents[0];
+  const otherEvents = upcomingEvents.slice(1);
+
+  return (
+    <div className="flex flex-col items-center fade-in">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="h-px w-3 bg-[#F5AFAF]/20"></div>
+        <div className="flex items-center gap-1.5 text-[#F5AFAF] text-[8px] tracking-[0.3em] uppercase font-bold">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5AFAF] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#F5AFAF]"></span>
+          </span>
+          Up Next
         </div>
-        <div className="h-px w-4 bg-stone-200"></div>
+        <div className="h-px w-3 bg-[#F5AFAF]/20"></div>
       </div>
       
-      <h3 className="text-xl font-light text-stone-600 mb-10 tracking-wide text-center max-w-md italic">
-        "{targetEvent.title}"
-      </h3>
-      
-      <div className="flex items-center gap-5 md:gap-12 bg-white/50 py-10 px-8 md:px-14 rounded-[3rem] shadow-sm border border-stone-100/50 backdrop-blur-sm">
-        <TimeBlock value={timeLeft.days} label="Days" />
-        <div className="text-stone-200 text-3xl font-thin pb-4">:</div>
-        <TimeBlock value={timeLeft.hours} label="Hours" />
-        <div className="text-stone-200 text-3xl font-thin pb-4">:</div>
-        <TimeBlock value={timeLeft.minutes} label="Min" />
-        <div className="text-stone-200 text-3xl font-thin pb-4">:</div>
-        <TimeBlock value={timeLeft.seconds} label="Sec" />
+      <div className="flex flex-col gap-4 w-full max-w-xl">
+        {/* Main Countdown */}
+        <div className="inline-flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 bg-white/60 border border-stone-100 py-4 px-8 rounded-3xl backdrop-blur-md shadow-sm">
+          <h3 className="text-sm font-serif font-medium text-stone-700 italic tracking-wide">
+            "{mainEvent.title}"
+          </h3>
+          <div className="h-px w-4 md:w-px md:h-4 bg-stone-200"></div>
+          <CountdownItem targetEvent={mainEvent} />
+        </div>
+
+        {/* Subsequent Events List */}
+        {otherEvents.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 px-2">
+            {otherEvents.map((event) => (
+              <div key={event.id} className="bg-white/30 backdrop-blur-sm border border-stone-100/50 rounded-2xl p-2.5 flex flex-col items-center text-center transition-all hover:bg-white/50">
+                <span className="text-[7px] uppercase tracking-widest text-stone-400 font-bold mb-1">
+                  {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                <span className="text-[10px] text-stone-600 font-medium truncate w-full px-2">
+                  {event.title}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

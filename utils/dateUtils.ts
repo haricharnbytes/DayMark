@@ -18,12 +18,12 @@ export const isToday = (year: number, month: number, day: number) => {
          today.getDate() === day;
 };
 
-export const getNextEvent = (events: any[]) => {
+export const getNextEvents = (events: any[], limit: number = 5) => {
   const now = new Date().getTime();
   const upcoming = events
     .map(e => ({ ...e, timestamp: new Date(`${e.date}T${e.time || '00:00'}`).getTime() }))
     .filter(e => e.timestamp > now)
     .sort((a, b) => a.timestamp - b.timestamp);
   
-  return upcoming[0] || null;
+  return upcoming.slice(0, limit);
 };
