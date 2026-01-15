@@ -15,8 +15,8 @@ const PRESET_COLORS = [
   { name: 'Stone', value: '#d6d3d1' },
   { name: 'Sage', value: '#b9c9b7' },
   { name: 'Terracotta', value: '#d9a58e' },
-  { name: 'Dusk', value: '#6594B1' }, // New requested color
-  { name: 'Blossom', value: '#DDAED3' }, // New requested color
+  { name: 'Dusk', value: '#6594B1' },
+  { name: 'Blossom', value: '#DDAED3' },
   { name: 'Lavender', value: '#c3b9d9' },
   { name: 'Sky', value: '#b7c9d9' },
   { name: 'Sand', value: '#e6d2b5' },
@@ -31,7 +31,8 @@ const EventModal: React.FC<EventModalProps> = ({
   initialEvent 
 }) => {
   const [title, setTitle] = useState('');
-  const [time, setTime] = useState('12:00');
+  const [startTime, setStartTime] = useState('12:00');
+  const [endTime, setEndTime] = useState('13:00');
   const [description, setDescription] = useState('');
   const [isImportant, setIsImportant] = useState(false);
   const [color, setColor] = useState(PRESET_COLORS[0].value);
@@ -39,13 +40,15 @@ const EventModal: React.FC<EventModalProps> = ({
   useEffect(() => {
     if (initialEvent) {
       setTitle(initialEvent.title);
-      setTime(initialEvent.time || '12:00');
+      setStartTime(initialEvent.startTime || '12:00');
+      setEndTime(initialEvent.endTime || '13:00');
       setDescription(initialEvent.description || '');
       setIsImportant(initialEvent.isImportant);
       setColor(initialEvent.color || PRESET_COLORS[0].value);
     } else {
       setTitle('');
-      setTime('12:00');
+      setStartTime('12:00');
+      setEndTime('13:00');
       setDescription('');
       setIsImportant(false);
       setColor(PRESET_COLORS[0].value);
@@ -62,10 +65,12 @@ const EventModal: React.FC<EventModalProps> = ({
       id: initialEvent?.id || crypto.randomUUID(),
       title,
       date: selectedDate,
-      time,
+      startTime,
+      endTime,
       description,
       isImportant,
-      color
+      color,
+      createdAt: initialEvent?.createdAt || Date.now()
     });
     onClose();
   };
@@ -97,26 +102,26 @@ const EventModal: React.FC<EventModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-stone-50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 transition-all outline-none text-stone-700"
-              placeholder="A quiet dinner..."
+              placeholder="What are you marking?"
             />
           </div>
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-medium">Date</label>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-medium">Start</label>
               <input 
-                disabled
-                type="text" 
-                value={selectedDate}
-                className="w-full bg-stone-100/50 border-none rounded-xl px-4 py-3.5 text-stone-400 cursor-not-allowed outline-none text-sm"
+                type="time" 
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full bg-stone-50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 outline-none text-stone-700"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-medium">Time</label>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 mb-2 font-medium">End</label>
               <input 
                 type="time" 
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 className="w-full bg-stone-50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 outline-none text-stone-700"
               />
             </div>
@@ -133,7 +138,6 @@ const EventModal: React.FC<EventModalProps> = ({
                   className={`group relative h-10 rounded-xl transition-all duration-300 flex items-center justify-center overflow-hidden
                     ${color === c.value ? 'ring-2 ring-stone-200 ring-offset-2 scale-105' : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
                   style={{ backgroundColor: c.value }}
-                  title={c.name}
                 >
                   {color === c.value && (
                     <div className="w-1.5 h-1.5 bg-white rounded-full shadow-sm" />
@@ -149,7 +153,7 @@ const EventModal: React.FC<EventModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-stone-50 border-none rounded-xl px-4 py-3.5 h-24 resize-none focus:ring-1 focus:ring-stone-200 outline-none text-stone-700 text-sm leading-relaxed"
-              placeholder="Reflections or details..."
+              placeholder="Reflections, details, or reminders..."
             />
           </div>
 
@@ -162,7 +166,7 @@ const EventModal: React.FC<EventModalProps> = ({
               className="w-4 h-4 rounded border-stone-200 text-stone-800 focus:ring-stone-400 accent-stone-800"
             />
             <label htmlFor="important" className="text-xs text-stone-500 cursor-pointer select-none font-medium tracking-wide">
-              Prioritize this moment
+              Mark as Important
             </label>
           </div>
 
@@ -171,14 +175,13 @@ const EventModal: React.FC<EventModalProps> = ({
               type="submit"
               className="flex-1 bg-stone-800 text-stone-50 py-4 rounded-2xl text-xs uppercase tracking-[0.2em] font-semibold hover:bg-stone-700 transition-all shadow-lg shadow-stone-200"
             >
-              {initialEvent ? 'Save Changes' : 'Add to Daymark'}
+              {initialEvent ? 'Save Changes' : 'Record Moment'}
             </button>
             {initialEvent && onDelete && (
               <button 
                 type="button"
                 onClick={() => { onDelete(initialEvent.id); onClose(); }}
                 className="px-5 py-4 rounded-2xl text-red-400 hover:bg-red-50 transition-colors"
-                title="Remove moment"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

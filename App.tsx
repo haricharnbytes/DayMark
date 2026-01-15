@@ -8,6 +8,11 @@ import {
   isToday, 
   getNextEvents 
 } from './utils/dateUtils';
+import { 
+  getAllEvents, 
+  saveEventToDB, 
+  deleteEventFromDB 
+} from './utils/db';
 import EventModal from './components/EventModal';
 import Countdown from './components/Countdown';
 
@@ -21,7 +26,7 @@ const MonthIcon: React.FC<{ month: number }> = ({ month }) => {
     <path d="M20 17.58A5 5 0 0018 8h-1.26A8 8 0 104 16.25M8 16v4m4-2v4m4-2v4" />,
     <path d="M12 12m-3 0a3 3 0 106 0a3 3 0 10-6 0M12 7V3m0 18v-4M7 12H3m18 0h-4m-1.5-5.5l3-3m-15 15l3-3m0-15l3 3m9 9l3 3" />,
     <path d="M12 3V1m0 22v-2m9-9h2M1 12h2m15.364-6.364l1.414-1.414M4.222 19.778l1.414-1.414M18.364 18.364l1.414 1.414M4.222 4.222l1.414 1.414M12 17a5 5 0 100-10 5 5 0 000 10z" />,
-    <path d="M2 10c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1M2 14c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1M2 18c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1" />,
+    <path d="M2 10c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1M2 14c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1M2 18c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1M2 18c1.5 0 2.5 1 4 1s2.5-1 4-1 2.5 1 4 1" />,
     <path d="M3 21l3-3m-3.5 1L5 16.5M10 12l.5 2.5M16 6l5-5M15 13l-3-3m0 0l-2 2m2-2l2-2m-2 2l-2-2m2 2l2 2M19 5l-1-1m2 2l-1-1" />,
     <path d="M20.39 3.11a2.39 2.39 0 00-3.38 0L3.11 17a2.39 2.39 0 000 3.39 2.39 2.39 0 003.38 0L20.39 6.5a2.39 2.39 0 000-3.39zM11.5 12.5l3-3" />,
     <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79zM15 6l.5 1.5.5-1.5-.5-1.5L15 6z" />,
@@ -76,6 +81,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
         {days.map(d => {
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayEvents = events.filter(e => e.date === dateStr);
+          const hasEvents = dayEvents.length > 0;
           const today = isToday(year, month, d);
           const isClicked = clickedDateId === `${month}-${d}`;
 
@@ -85,19 +91,23 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
                 onClick={() => onDateClick(d, month)}
                 className={`w-full group relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-300
                   ${isClicked ? 'date-pulse scale-110' : ''}
-                  ${today ? 'bg-[#F5AFAF] text-white shadow-lg shadow-[#F5AFAF]/20 scale-110 z-10' : 'hover:bg-stone-100 text-stone-500 hover:text-stone-800'}`}
+                  ${today 
+                    ? 'bg-[#F5AFAF] text-white shadow-lg shadow-[#F5AFAF]/20 scale-110 z-10' 
+                    : hasEvents 
+                      ? 'bg-[#a53860] text-white shadow-lg shadow-[#a53860]/20 scale-105 z-10' 
+                      : 'hover:bg-stone-100 text-stone-500 hover:text-stone-800'
+                  }`}
               >
                 <span className={`${large ? 'text-base' : 'text-[11px]'} font-medium transition-colors`}>
                   {d}
                 </span>
                 
-                {/* Event indicator dots */}
                 <div className={`absolute ${large ? 'bottom-2.5' : 'bottom-1.5'} flex gap-0.5 h-1 items-center justify-center w-full`}>
                   {dayEvents.slice(0, 3).map((e) => (
                     <div 
                       key={e.id} 
                       className={`rounded-full transition-all ${e.isImportant ? (large ? 'w-1.5 h-1.5' : 'w-1 h-1') : (large ? 'w-1 h-1' : 'w-0.5 h-0.5')} opacity-80`} 
-                      style={{ backgroundColor: today ? '#ffffff' : (e.color || '#d6d3d1') }} 
+                      style={{ backgroundColor: (today || hasEvents) ? '#ffffff' : (e.color || '#d6d3d1') }} 
                     />
                   ))}
                   {dayEvents.length > 3 && (
@@ -106,7 +116,6 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
                 </div>
               </button>
 
-              {/* Event Tooltip on Hover */}
               {dayEvents.length > 0 && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-stone-100 opacity-0 pointer-events-none group-hover/day:opacity-100 transition-all duration-300 z-[60] scale-95 group-hover/day:scale-100 origin-bottom">
                   <div className="text-[9px] uppercase tracking-widest text-[#F5AFAF] font-bold mb-2 border-b border-stone-100 pb-1 flex justify-between">
@@ -120,8 +129,8 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
                           <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
                           <span className="text-[11px] font-medium text-stone-700 truncate font-serif">{e.title}</span>
                         </div>
-                        {e.time && (
-                          <span className="text-[8px] text-stone-400 pl-3 uppercase tracking-tighter tabular-nums">{e.time}</span>
+                        {e.startTime && (
+                          <span className="text-[8px] text-stone-400 pl-3 uppercase tracking-tighter tabular-nums">{e.startTime} - {e.endTime}</span>
                         )}
                       </div>
                     ))}
@@ -137,7 +146,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
   );
 };
 
-const WeeklyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number) => void }> = ({ year, month, day, events, onDateClick }) => {
+const WeeklyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, onDateClick }) => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   
   const startOfWeek = new Date(year, month, day);
@@ -149,9 +158,9 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
     return d;
   });
 
-  const toggleExpand = (e: React.MouseEvent, id: string) => {
+  const handleEventClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setExpandedEventId(expandedEventId === id ? null : id);
+    setExpandedEventId(prev => prev === id ? null : id);
   };
 
   return (
@@ -175,15 +184,28 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
               {dayEvents.map(e => (
                 <div 
                   key={e.id} 
-                  onClick={(event) => toggleExpand(event, e.id)}
+                  onClick={(event) => handleEventClick(event, e.id)}
                   className={`text-[10px] p-2 rounded-lg bg-stone-50 border border-stone-100/50 text-stone-600 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                    <span className="font-medium">{e.title}</span>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                      <span className="font-medium truncate">{e.title}</span>
+                    </div>
+                    {expandedEventId === e.id && (
+                      <button 
+                        onClick={(event) => { event.stopPropagation(); onDateClick(date.getDate(), date.getMonth(), e); }}
+                        className="text-[#F5AFAF] hover:text-[#a53860] transition-colors p-0.5"
+                        title="Edit Moment"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                   {expandedEventId === e.id && e.description && (
-                    <div className="mt-1 text-stone-400 text-[9px] leading-relaxed border-t border-stone-100/50 pt-1.5">
+                    <div className="mt-1 text-stone-400 text-[9px] leading-relaxed border-t border-stone-100/50 pt-1.5 animate-fadeIn">
                       {e.description}
                     </div>
                   )}
@@ -198,15 +220,15 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
   );
 };
 
-const DailyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number) => void }> = ({ year, month, day, events, onDateClick }) => {
+const DailyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, onDateClick }) => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  const dayEvents = events.filter(e => e.date === dStr).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
+  const dayEvents = events.filter(e => e.date === dStr).sort((a,b) => (a.startTime || '').localeCompare(b.startTime || ''));
   const today = isToday(year, month, day);
 
-  const toggleExpand = (e: React.MouseEvent, id: string) => {
+  const handleEventClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setExpandedEventId(expandedEventId === id ? null : id);
+    setExpandedEventId(prev => prev === id ? null : id);
   };
 
   return (
@@ -223,14 +245,27 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
 
       <div className="space-y-6">
         {dayEvents.length > 0 ? dayEvents.map(e => (
-          <div key={e.id} className="flex gap-6 items-start group cursor-pointer" onClick={(event) => toggleExpand(event, e.id)}>
+          <div key={e.id} className="flex gap-6 items-start group cursor-pointer" onClick={(event) => handleEventClick(event, e.id)}>
             <div className="text-[11px] font-bold text-stone-300 tracking-tighter pt-1 w-12 text-right shrink-0">
-              {e.time || 'All Day'}
+              {e.startTime || 'All Day'}
             </div>
             <div className="flex-1 pb-6 border-b border-stone-100 last:border-0">
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`w-2 h-2 rounded-full transition-transform duration-300 ${expandedEventId === e.id ? 'scale-125' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                <h4 className="text-lg font-medium text-stone-700">{e.title}</h4>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full transition-transform duration-300 ${expandedEventId === e.id ? 'scale-125' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                  <h4 className="text-lg font-medium text-stone-700">{e.title}</h4>
+                </div>
+                {expandedEventId === e.id && (
+                  <button 
+                    onClick={(event) => { event.stopPropagation(); onDateClick(day, month, e); }}
+                    className="text-stone-300 hover:text-[#a53860] transition-colors p-1"
+                    title="Edit Moment"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className={`transition-all duration-300 overflow-hidden ${expandedEventId === e.id ? 'max-h-96 opacity-100 mt-2' : 'max-h-6 opacity-60 truncate'}`}>
                 <p className="text-stone-400 text-sm leading-relaxed">{e.description || 'No notes added'}</p>
@@ -253,63 +288,72 @@ const App: React.FC = () => {
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [viewDay, setViewDay] = useState(new Date().getDate());
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [events, setEvents] = useState<CalendarEvent[]>(() => {
-    try {
-      const saved = localStorage.getItem('ethereal_events');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      console.error('Failed to load events from localStorage', e);
-      return [];
-    }
-  });
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [clickedDateId, setClickedDateId] = useState<string|null>(null);
 
+  // Sync state with IndexedDB on mount
   useEffect(() => {
-    try {
-      localStorage.setItem('ethereal_events', JSON.stringify(events));
-    } catch (e) {
-      console.error('Failed to save events to localStorage', e);
-    }
-  }, [events]);
+    const loadEvents = async () => {
+      try {
+        const storedEvents = await getAllEvents();
+        setEvents(storedEvents);
+      } catch (e) {
+        console.error('DayMark Init Error:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadEvents();
+  }, []);
 
   const upcomingEvents = useMemo(() => getNextEvents(events, 5), [events]);
 
-  const handleDateClick = (day: number, month: number) => {
+  const handleDateClick = (day: number, month: number, eventToEdit?: CalendarEvent) => {
     setViewDay(day);
     setViewMonth(month);
     const dateId = `${month}-${day}`;
     setClickedDateId(dateId);
     
+    // Smooth delay for visual feedback
     setTimeout(() => {
       const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const existing = events.find(e => e.date === dateStr);
+      const firstEvent = events.find(e => e.date === dateStr);
       
       setSelectedDate(dateStr);
-      setEditingEvent(existing || null);
+      // If a specific event was passed (from daily/weekly list), edit it.
+      // Otherwise, edit the first found event on that date, or create new.
+      setEditingEvent(eventToEdit || firstEvent || null);
       setIsModalOpen(true);
       setClickedDateId(null);
-    }, 250);
+    }, 200);
   };
 
-  const handleSaveEvent = (event: CalendarEvent) => {
-    setEvents(prev => {
-      const idx = prev.findIndex(e => e.id === event.id);
-      if (idx > -1) {
-        const updated = [...prev];
-        updated[idx] = event;
-        return updated;
-      }
-      return [...prev, event];
-    });
+  const handleSaveEvent = async (event: CalendarEvent) => {
+    try {
+      await saveEventToDB(event);
+      // Refresh events from DB to ensure single source of truth
+      const updatedEvents = await getAllEvents();
+      setEvents(updatedEvents);
+    } catch (e) {
+      console.error('DayMark Save Error:', e);
+      alert('Could not save your moment. Please try again.');
+    }
   };
 
-  const handleDeleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await deleteEventFromDB(id);
+      const updatedEvents = await getAllEvents();
+      setEvents(updatedEvents);
+    } catch (e) {
+      console.error('DayMark Delete Error:', e);
+    }
   };
 
   const changeYear = (offset: number) => {
@@ -331,6 +375,14 @@ const App: React.FC = () => {
       ))}
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FCF8F8]">
+        <div className="text-stone-400 font-serif italic text-xl animate-pulse">Entering DayMark...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FCF8F8] px-4 py-12 md:py-20 max-w-7xl mx-auto selection:bg-[#F5AFAF]/20 overflow-x-hidden">

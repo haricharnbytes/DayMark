@@ -12,7 +12,8 @@ const CountdownItem: React.FC<{ targetEvent: CalendarEvent }> = ({ targetEvent }
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date().getTime();
-      const target = new Date(`${targetEvent.date}T${targetEvent.time || '00:00'}`).getTime();
+      // Fix: Use startTime instead of time
+      const target = new Date(`${targetEvent.date}T${targetEvent.startTime || '00:00'}`).getTime();
       const difference = target - now;
 
       if (difference <= 0) {

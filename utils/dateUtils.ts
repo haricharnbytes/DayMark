@@ -21,7 +21,8 @@ export const isToday = (year: number, month: number, day: number) => {
 export const getNextEvents = (events: any[], limit: number = 5) => {
   const now = new Date().getTime();
   const upcoming = events
-    .map(e => ({ ...e, timestamp: new Date(`${e.date}T${e.time || '00:00'}`).getTime() }))
+    // Fix: Use startTime instead of time
+    .map(e => ({ ...e, timestamp: new Date(`${e.date}T${e.startTime || '00:00'}`).getTime() }))
     .filter(e => e.timestamp > now)
     .sort((a, b) => a.timestamp - b.timestamp);
   
