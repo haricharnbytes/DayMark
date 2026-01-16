@@ -6,24 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DayMark</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      };
+      
+      // Flash prevention: apply theme before page render
+      (function() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'JohnDoe Regular';
+            src: local('JohnDoe Regular');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         :root {
-            --font-serif: 'Courier Prime', monospace;
-            --font-sans: 'Courier Prime', monospace;
+            --font-serif: 'JohnDoe Regular', 'Courier Prime', monospace;
+            --font-sans: 'JohnDoe Regular', 'Courier Prime', monospace;
             --color-accent: #F5AFAF;
-            --color-bg: #FCF8F8;
+            --color-bg: #000000;
         }
         body {
             font-family: var(--font-sans);
             background-color: var(--color-bg);
-            color: #4a4a4a;
+            color: #d6d3d1;
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .dark body {
+            background-color: #000000;
+            color: #e7e5e4; 
         }
         h1, h2, h3, h4, h5, h6, .font-serif, .font-sans, button, input, textarea, select {
-            font-family: 'Courier Prime', monospace !important;
+            font-family: var(--font-sans) !important;
         }
         .calendar-grid {
             display: grid;
@@ -37,7 +66,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Month Transition Animation */
         .month-transition {
             animation: monthFade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
@@ -53,36 +81,53 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: #e5e5e5;
+            background: #27272a;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #d1d1d1;
+            background: #3f3f46;
         }
         
         .date-pulse {
-            animation: datePulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: datePulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         @keyframes datePulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.15); opacity: 0.6; }
-            100% { transform: scale(1.1); opacity: 0.8; }
+            0% { transform: scale(1); }
+            40% { transform: scale(1.18); }
+            100% { transform: scale(1.1); }
         }
 
-        .denton-title {
-            font-family: var(--font-serif);
-            font-weight: 700;
+        .success-flourish {
+            animation: successFlourish 1.2s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* Prevent scroll jump on content change */
+        @keyframes successFlourish {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 175, 175, 0.7); }
+            30% { transform: scale(1.2); box-shadow: 0 0 0 20px rgba(245, 175, 175, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 175, 175, 0); }
+        }
+
+        /* Subtle tactile hover and active states for calendar dates */
+        .calendar-date-btn {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .calendar-date-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .calendar-date-btn:active {
+            transform: translateY(0px) scale(0.96);
+            transition: all 0.1s ease;
+        }
+
         main {
             min-height: 60vh;
         }
 
-        /* Adjust tracking for monospaced typewriter feel */
         * {
             letter-spacing: -0.01em;
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
         }
         
         .tracking-widest {
@@ -99,7 +144,7 @@
 }
 </script>
 </head>
-<body>
+<body class="bg-black">
     <div id="root"></div>
 </body>
 </html>
