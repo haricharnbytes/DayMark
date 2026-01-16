@@ -43,6 +43,7 @@ const EventModal: React.FC<EventModalProps> = ({
   // Daily Note State
   const [dailyNote, setDailyNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+  const [showSavedFeedback, setShowSavedFeedback] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -68,6 +69,8 @@ const EventModal: React.FC<EventModalProps> = ({
         setColor(PRESET_COLORS[0].value);
       }
     }
+    // Reset feedback when modal opens for a new date
+    setShowSavedFeedback(false);
   }, [initialEvent, isOpen, selectedDate]);
 
   if (!isOpen) return null;
@@ -91,10 +94,15 @@ const EventModal: React.FC<EventModalProps> = ({
   };
 
   const handleNoteSave = async () => {
+    if (isSavingNote) return;
     setIsSavingNote(true);
     await saveDailyNote(selectedDate, dailyNote);
     setIsSavingNote(false);
+    setShowSavedFeedback(true);
     if (onNoteUpdated) onNoteUpdated();
+    
+    // Hide feedback after delay
+    setTimeout(() => setShowSavedFeedback(false), 2000);
   };
 
   return (
@@ -121,14 +129,21 @@ const EventModal: React.FC<EventModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Daily Mark Section */}
           <div className="space-y-6">
-            <div className="bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800">
+            <div className="bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800 transition-all duration-500">
               <div className="flex justify-between items-center mb-4">
                 <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Daily Mark</label>
-                {isSavingNote && <span className="text-[8px] text-[#F5AFAF] animate-pulse">Syncing...</span>}
+                {(isSavingNote || showSavedFeedback) && (
+                  <span className={`text-[8px] uppercase tracking-widest font-bold transition-all duration-300 ${showSavedFeedback ? 'text-green-500' : 'text-[#F5AFAF] animate-pulse'}`}>
+                    {showSavedFeedback ? 'Saved' : 'Syncing...'}
+                  </span>
+                )}
               </div>
               <textarea 
                 value={dailyNote}
-                onChange={(e) => setDailyNote(e.target.value)}
+                onChange={(e) => {
+                  setDailyNote(e.target.value);
+                  setShowSavedFeedback(false);
+                }}
                 onBlur={handleNoteSave}
                 placeholder="No reflections recorded yet..."
                 className="w-full bg-transparent border-none focus:ring-0 text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none h-48 placeholder:text-stone-300 dark:placeholder:text-stone-700"
@@ -136,9 +151,18 @@ const EventModal: React.FC<EventModalProps> = ({
               <div className="mt-4 flex justify-end">
                 <button 
                    onClick={handleNoteSave}
-                   className="text-[9px] uppercase tracking-[0.2em] text-[#F5AFAF] font-bold hover:text-[#a53860] transition-colors"
+                   className={`flex items-center gap-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all duration-500 py-2 px-4 rounded-full
+                     ${showSavedFeedback 
+                       ? 'bg-green-500/10 text-green-500' 
+                       : 'text-[#F5AFAF] hover:text-[#a53860] hover:bg-[#F5AFAF]/5'
+                     }`}
                 >
-                  Update Mark
+                  {showSavedFeedback && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  {showSavedFeedback ? 'Saved' : 'Update Mark'}
                 </button>
               </div>
             </div>

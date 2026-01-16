@@ -18,6 +18,7 @@ import {
 import EventModal from './components/EventModal';
 import Countdown from './components/Countdown';
 import DailyMarkNote from './components/DailyMarkNote';
+import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
 
 type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
 
@@ -101,15 +102,13 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
                   ${isJustSaved ? 'success-flourish z-20' : ''}
                   ${today 
                     ? 'bg-[#F5AFAF] text-white shadow-xl shadow-[#F5AFAF]/30 z-10' 
-                    : hasEvents 
-                      ? 'bg-[#a53860] text-white shadow-xl shadow-[#a53860]/30 z-10' 
-                      : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
+                    : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
                   }`}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today || hasEvents ? 'hidden' : ''}`} />
+                <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
                 
                 {/* Journal/Mark Indicator */}
-                {hasNote && !today && !hasEvents && (
+                {hasNote && !today && (
                   <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-[#F5AFAF]/60 animate-pulse" />
                 )}
 
@@ -117,14 +116,13 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
                   {d}
                 </span>
                 
+                {/* Event Indicator Dot - specifically #a53860 as requested */}
                 <div className={`absolute z-10 ${large ? 'bottom-3' : 'bottom-1.5'} flex gap-1 h-1.5 items-center justify-center w-full`}>
-                  {dayEvents.slice(0, 3).map((e) => (
+                  {hasEvents && (
                     <div 
-                      key={e.id} 
-                      className={`rounded-full transition-all ${e.isImportant ? (large ? 'w-2 h-2' : 'w-1.5 h-1.5') : (large ? 'w-1.5 h-1.5' : 'w-1 h-1')} opacity-90`} 
-                      style={{ backgroundColor: (today || hasEvents) ? '#ffffff' : (e.color || '#d6d3d1') }} 
+                      className={`rounded-full transition-all ${large ? 'w-2 h-2' : 'w-1.5 h-1.5'} ${today ? 'bg-white' : 'bg-[#a53860]'}`} 
                     />
-                  ))}
+                  )}
                 </div>
               </button>
             </div>
@@ -287,6 +285,7 @@ const App: React.FC = () => {
   const [noteDates, setNoteDates] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showEventsOverlay, setShowEventsOverlay] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [clickedDateId, setClickedDateId] = useState<string|null>(null);
@@ -325,7 +324,7 @@ const App: React.FC = () => {
     loadInitial();
   }, [refreshData]);
 
-  const upcomingEvents = useMemo(() => getNextEvents(events, 5), [events]);
+  const upcomingEvents = useMemo(() => getNextEvents(events, 10), [events]);
 
   const handleDateClick = (day: number, month: number, eventToEdit?: CalendarEvent) => {
     setViewDay(day);
@@ -425,7 +424,18 @@ const App: React.FC = () => {
       </div>
 
       <header className="mb-16 text-center fade-in relative">
-        <div className="absolute top-0 right-0 p-4">
+        <div className="absolute top-0 right-0 p-4 flex gap-4">
+           <button 
+             onClick={() => setShowEventsOverlay(true)}
+             className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group"
+             aria-label="Toggle Events Overlay"
+           >
+             <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Events</span>
+             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 min-w-[24px] px-1.5 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
+                <span className="text-[10px] font-bold">{upcomingEvents.length}</span>
+             </div>
+           </button>
+
            <button 
              onClick={() => setIsDarkMode(!isDarkMode)}
              className="p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
@@ -575,6 +585,12 @@ const App: React.FC = () => {
         selectedDate={selectedDate}
         initialEvent={editingEvent}
         onNoteUpdated={refreshData}
+      />
+
+      <UpcomingEventsOverlay
+        isOpen={showEventsOverlay}
+        onClose={() => setShowEventsOverlay(false)}
+        upcomingEvents={upcomingEvents}
       />
     </div>
   );

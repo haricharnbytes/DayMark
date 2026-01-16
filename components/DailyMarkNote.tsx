@@ -10,7 +10,10 @@ interface DailyMarkNoteProps {
 const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  const [isFinalized, setIsFinalized] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
   const saveTimeoutRef = useRef<number | null>(null);
   const latestContentRef = useRef(content);
   const lastSavedContentRef = useRef('');
@@ -27,14 +30,18 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
       setContent(savedNote);
       latestContentRef.current = savedNote;
       lastSavedContentRef.current = savedNote;
-      setShowSavedFeedback(false);
+      
+      // If note exists, show finalized state. If empty, show editor.
+      const hasContent = savedNote && savedNote.trim().length > 0;
+      setIsFinalized(hasContent);
+      setShowEditor(!hasContent);
     };
     loadNote();
   }, [date]);
 
   const performSave = useCallback(async () => {
     const contentToSave = latestContentRef.current;
-    if (contentToSave === lastSavedContentRef.current && !showSavedFeedback) {
+    if (contentToSave === lastSavedContentRef.current) {
       setIsSaving(false);
       return;
     }
@@ -48,24 +55,28 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
       console.error('Failed to save note:', error);
       setIsSaving(false);
     }
-  }, [date, showSavedFeedback, onNoteSaved]);
+  }, [date, onNoteSaved]);
 
-  const handleManualMark = async () => {
+  const handleMarkComplete = async () => {
     setIsSaving(true);
+    setIsAnimating(true);
     if (saveTimeoutRef.current) {
       window.clearTimeout(saveTimeoutRef.current);
     }
     await performSave();
-    setShowSavedFeedback(true);
-    setTimeout(() => setShowSavedFeedback(false), 2000);
+    
+    // Smooth transition
+    setTimeout(() => {
+      setIsFinalized(true);
+      setShowEditor(false);
+      setIsAnimating(false);
+    }, 400);
   };
 
-  // Handle auto-save on change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setContent(newContent);
     setIsSaving(true);
-    setShowSavedFeedback(false);
 
     if (saveTimeoutRef.current) {
       window.clearTimeout(saveTimeoutRef.current);
@@ -74,20 +85,13 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
     saveTimeoutRef.current = window.setTimeout(performSave, 1500);
   };
 
-  // Ensure data is saved on unmount or tab close
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      performSave();
-    };
-
+    const handleBeforeUnload = () => performSave();
     window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current);
-      }
-      performSave(); // Save on unmount
+      if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
+      performSave();
     };
   }, [performSave]);
 
@@ -99,8 +103,33 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
 
   const isTodayDate = date === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
 
+  // State: Day is marked and we are not explicitly editing
+  if (isFinalized && !showEditor) {
+    return (
+      <div className="max-w-lg mx-auto mb-10 px-4 fade-in">
+        <div className={`bg-stone-800 dark:bg-stone-900 rounded-[2rem] p-8 border border-stone-700 dark:border-stone-800 shadow-2xl flex flex-col items-center text-center group transition-all duration-700 ${isAnimating ? 'scale-110 opacity-0' : 'scale-100 opacity-100 success-flourish'}`}>
+          <div className="w-12 h-12 bg-[#F5AFAF] rounded-full flex items-center justify-center mb-6 shadow-lg shadow-[#F5AFAF]/20 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold mb-2">Completion</span>
+          <h2 className="text-xl font-serif text-white italic mb-2">Today's note is marked</h2>
+          <p className="text-stone-400 text-[11px] uppercase tracking-widest font-medium mb-8">Reflections for {formattedDate} are safe.</p>
+          
+          <button 
+            onClick={() => setShowEditor(true)}
+            className="text-[9px] uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors py-2 px-6 border border-stone-700 rounded-full hover:bg-stone-800 active:scale-95"
+          >
+            Review Mark
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-lg mx-auto mb-10 fade-in px-4" style={{ animationDelay: '0.3s' }}>
+    <div className={`max-w-lg mx-auto mb-10 fade-in px-4 transition-all duration-500 ${isAnimating ? 'opacity-50 scale-95 blur-sm' : 'opacity-100 scale-100'}`} style={{ animationDelay: '0.3s' }}>
       <div className="bg-white/40 dark:bg-stone-800/40 backdrop-blur-md rounded-[1.5rem] p-6 border border-stone-100 dark:border-stone-700 shadow-sm hover:shadow-md transition-all duration-500 group relative overflow-hidden">
         <div className="flex justify-between items-start mb-4">
           <div className="flex flex-col">
@@ -119,41 +148,40 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
             value={content}
             onChange={handleChange}
             placeholder="What happened today?"
-            className="w-full bg-transparent border-none focus:ring-0 text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none min-h-[100px] placeholder:text-stone-300 dark:placeholder:text-stone-600 placeholder:italic p-0"
+            className="w-full bg-transparent border-none focus:ring-0 text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none min-h-[120px] placeholder:text-stone-300 dark:placeholder:text-stone-600 placeholder:italic p-0"
           />
           <div className="absolute bottom-0 left-0 h-px w-0 bg-[#F5AFAF]/20 group-focus-within:w-full transition-all duration-1000"></div>
         </div>
         
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <div className={`w-1 h-1 rounded-full transition-all duration-500 ${content ? 'bg-[#F5AFAF] scale-125' : 'bg-stone-200 dark:bg-stone-700'}`}></div>
             <span className="text-[8px] text-stone-300 dark:text-stone-600 uppercase tracking-widest font-bold">
-              {showSavedFeedback ? 'Marked' : content ? 'Journaled' : 'Empty Slate'}
+              {content ? 'Journaling...' : 'Empty Slate'}
             </span>
           </div>
 
-          <button
-            onClick={handleManualMark}
-            disabled={!content || isSaving}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-500
-              ${showSavedFeedback 
-                ? 'bg-[#a53860] text-white' 
-                : content 
-                  ? 'bg-stone-800 dark:bg-stone-200 text-stone-200 dark:text-stone-900 hover:scale-105 hover:shadow-lg active:scale-95' 
-                  : 'bg-stone-100 dark:bg-stone-900 text-stone-300 dark:text-stone-700 cursor-not-allowed opacity-50'
-              }`}
-          >
-            {showSavedFeedback ? (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Marked
-              </>
-            ) : (
-              'Mark'
+          <div className="flex gap-2">
+            {isFinalized && (
+              <button
+                onClick={() => setShowEditor(false)}
+                className="px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                Cancel
+              </button>
             )}
-          </button>
+            <button
+              onClick={handleMarkComplete}
+              disabled={!content || isSaving}
+              className={`flex items-center gap-2 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-500
+                ${content 
+                    ? 'bg-stone-800 dark:bg-stone-200 text-stone-200 dark:text-stone-900 hover:scale-105 hover:shadow-lg active:scale-95' 
+                    : 'bg-stone-100 dark:bg-stone-900 text-stone-300 dark:text-stone-700 cursor-not-allowed opacity-50'
+                }`}
+            >
+              Mark
+            </button>
+          </div>
         </div>
       </div>
     </div>
