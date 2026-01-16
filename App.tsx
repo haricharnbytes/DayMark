@@ -11,7 +11,9 @@ import {
 import { 
   getAllEvents, 
   saveEventToDB, 
-  deleteEventFromDB 
+  deleteEventFromDB,
+  getAllNoteDates,
+  getDailyNote
 } from './utils/db';
 import EventModal from './components/EventModal';
 import Countdown from './components/Countdown';
@@ -46,13 +48,14 @@ interface MonthProps {
   year: number;
   month: number;
   events: CalendarEvent[];
+  noteDates: string[];
   onDateClick: (day: number, month: number, eventToEdit?: CalendarEvent) => void;
   clickedDateId: string | null;
   justSavedDateStr: string | null;
   large?: boolean;
 }
 
-const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, clickedDateId, justSavedDateStr, large = false }) => {
+const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDateClick, clickedDateId, justSavedDateStr, large = false }) => {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -84,6 +87,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayEvents = events.filter(e => e.date === dateStr);
           const hasEvents = dayEvents.length > 0;
+          const hasNote = noteDates.includes(dateStr);
           const today = isToday(year, month, d);
           const isClicked = clickedDateId === `${month}-${d}`;
           const isJustSaved = justSavedDateStr === dateStr;
@@ -104,6 +108,11 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
               >
                 <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today || hasEvents ? 'hidden' : ''}`} />
                 
+                {/* Journal/Mark Indicator */}
+                {hasNote && !today && !hasEvents && (
+                  <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-[#F5AFAF]/60 animate-pulse" />
+                )}
+
                 <span className={`relative z-10 ${large ? 'text-3xl' : 'text-[15px]'} font-bold`}>
                   {d}
                 </span>
@@ -126,7 +135,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
   );
 };
 
-const WeeklyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, onDateClick }) => {
+const WeeklyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], noteDates: string[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, noteDates, onDateClick }) => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   
   const startOfWeek = useMemo(() => {
@@ -151,6 +160,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
       {weekDays.map((date, idx) => {
         const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const dayEvents = events.filter(e => e.date === dStr);
+        const hasNote = noteDates.includes(dStr);
         const today = isToday(date.getFullYear(), date.getMonth(), date.getDate());
 
         return (
@@ -159,9 +169,12 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
               <span className="text-[11px] uppercase tracking-widest text-stone-400 dark:text-stone-500 font-bold mb-2">
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </span>
-              <span className={`text-4xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
-                {date.getDate()}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-4xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
+                  {date.getDate()}
+                </span>
+                {hasNote && <div className="w-2 h-2 rounded-full bg-[#F5AFAF] mt-2" title="Journal Mark" />}
+              </div>
             </div>
             <div className="flex flex-col gap-2 flex-1">
               {dayEvents.map(e => (
@@ -186,11 +199,21 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
   );
 };
 
-const DailyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, onDateClick }) => {
+const DailyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], noteDates: string[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, noteDates, onDateClick }) => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+  const [noteContent, setNoteContent] = useState('');
   const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   const dayEvents = events.filter(e => e.date === dStr).sort((a,b) => (a.startTime || '').localeCompare(b.startTime || ''));
+  const hasNote = noteDates.includes(dStr);
   const today = isToday(year, month, day);
+
+  useEffect(() => {
+    const fetchNote = async () => {
+      const note = await getDailyNote(dStr);
+      setNoteContent(note);
+    };
+    fetchNote();
+  }, [dStr, noteDates]);
 
   const handleEventClick = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -198,18 +221,29 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition" onClick={() => onDateClick(day, month)}>
+    <div className="max-w-3xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition" onClick={() => onDateClick(day, month)}>
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-16">
         <div>
           <h3 className="text-stone-400 dark:text-stone-500 text-sm uppercase tracking-[0.4em] font-bold mb-3">Focus</h3>
           <h2 className="text-4xl md:text-6xl font-bold text-stone-800 dark:text-stone-100">
             {new Date(dStr + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' })}
           </h2>
+          {hasNote && <p className="text-[#F5AFAF] text-[10px] uppercase tracking-[0.2em] font-bold mt-2">Day is Marked</p>}
         </div>
         {today && <span className="w-fit bg-[#F5AFAF] text-white px-6 py-2 rounded-full text-[11px] uppercase tracking-[0.2em] font-bold shadow-lg shadow-[#F5AFAF]/20">Today</span>}
       </div>
 
+      {noteContent && (
+        <div className="mb-12 p-8 bg-stone-50 dark:bg-stone-800/50 rounded-3xl border border-stone-100 dark:border-stone-800">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-[#F5AFAF] font-bold block mb-4">Daily Reflection</span>
+          <p className="font-serif italic text-stone-600 dark:text-stone-300 text-lg leading-relaxed">
+            {noteContent}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-8">
+        <h3 className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold mb-6">Recorded Moments</h3>
         {dayEvents.length > 0 ? dayEvents.map(e => (
           <div key={e.id} className="flex gap-4 md:gap-8 items-start group cursor-pointer" onClick={(event) => handleEventClick(event, e.id)}>
             <div className="text-[11px] md:text-[12px] font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-1.5 w-14 md:w-16 text-right shrink-0 tabular-nums">
@@ -250,6 +284,7 @@ const App: React.FC = () => {
   });
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [noteDates, setNoteDates] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -271,30 +306,35 @@ const App: React.FC = () => {
     return `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(viewDay).padStart(2, '0')}`;
   }, [viewYear, viewMonth, viewDay]);
 
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const storedEvents = await getAllEvents();
-        setEvents(storedEvents);
-      } catch (e) {
-        console.error('DayMark Init Error:', e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadEvents();
+  const refreshData = useCallback(async () => {
+    try {
+      const storedEvents = await getAllEvents();
+      const storedNoteDates = await getAllNoteDates();
+      setEvents(storedEvents);
+      setNoteDates(storedNoteDates);
+    } catch (e) {
+      console.error('DayMark Refresh Error:', e);
+    }
   }, []);
+
+  useEffect(() => {
+    const loadInitial = async () => {
+      await refreshData();
+      setIsLoading(false);
+    };
+    loadInitial();
+  }, [refreshData]);
 
   const upcomingEvents = useMemo(() => getNextEvents(events, 5), [events]);
 
   const handleDateClick = (day: number, month: number, eventToEdit?: CalendarEvent) => {
     setViewDay(day);
     setViewMonth(month);
+    const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dateId = `${month}-${day}`;
     setClickedDateId(dateId);
     
     setTimeout(() => {
-      const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const firstEvent = events.find(e => e.date === dateStr);
       
       setSelectedDate(dateStr);
@@ -307,8 +347,7 @@ const App: React.FC = () => {
   const handleSaveEvent = async (event: CalendarEvent) => {
     try {
       await saveEventToDB(event);
-      const updatedEvents = await getAllEvents();
-      setEvents(updatedEvents);
+      await refreshData();
       
       setJustSavedDateStr(event.date);
       setTimeout(() => {
@@ -322,8 +361,7 @@ const App: React.FC = () => {
   const handleDeleteEvent = async (id: string) => {
     try {
       await deleteEventFromDB(id);
-      const updatedEvents = await getAllEvents();
-      setEvents(updatedEvents);
+      await refreshData();
     } catch (e) {
       console.error('DayMark Delete Error:', e);
     }
@@ -478,7 +516,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <DailyMarkNote date={activeDateStr} />
+      <DailyMarkNote date={activeDateStr} onNoteSaved={refreshData} />
 
       <main className="fade-in min-h-[50vh]" style={{animationDelay: '0.2s'}}>
         {viewMode === 'yearly' && (
@@ -489,6 +527,7 @@ const App: React.FC = () => {
                 year={viewYear} 
                 month={m} 
                 events={events} 
+                noteDates={noteDates}
                 onDateClick={handleDateClick} 
                 clickedDateId={clickedDateId}
                 justSavedDateStr={justSavedDateStr}
@@ -504,6 +543,7 @@ const App: React.FC = () => {
                  year={viewYear} 
                  month={viewMonth} 
                  events={events} 
+                 noteDates={noteDates}
                  onDateClick={handleDateClick} 
                  clickedDateId={clickedDateId} 
                  justSavedDateStr={justSavedDateStr}
@@ -514,11 +554,11 @@ const App: React.FC = () => {
         )}
 
         {viewMode === 'weekly' && (
-          <WeeklyView year={viewYear} month={viewMonth} day={viewDay} events={events} onDateClick={handleDateClick} />
+          <WeeklyView year={viewYear} month={viewMonth} day={viewDay} events={events} noteDates={noteDates} onDateClick={handleDateClick} />
         )}
 
         {viewMode === 'daily' && (
-          <DailyView year={viewYear} month={viewMonth} day={viewDay} events={events} onDateClick={handleDateClick} />
+          <DailyView year={viewYear} month={viewMonth} day={viewDay} events={events} noteDates={noteDates} onDateClick={handleDateClick} />
         )}
       </main>
 
@@ -534,6 +574,7 @@ const App: React.FC = () => {
         onDelete={handleDeleteEvent}
         selectedDate={selectedDate}
         initialEvent={editingEvent}
+        onNoteUpdated={refreshData}
       />
     </div>
   );

@@ -4,9 +4,10 @@ import { getDailyNote, saveDailyNote } from '../utils/db';
 
 interface DailyMarkNoteProps {
   date: string;
+  onNoteSaved?: () => void;
 }
 
-const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date }) => {
+const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
@@ -42,11 +43,12 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date }) => {
       await saveDailyNote(date, contentToSave);
       lastSavedContentRef.current = contentToSave;
       setIsSaving(false);
+      if (onNoteSaved) onNoteSaved();
     } catch (error) {
       console.error('Failed to save note:', error);
       setIsSaving(false);
     }
-  }, [date, showSavedFeedback]);
+  }, [date, showSavedFeedback, onNoteSaved]);
 
   const handleManualMark = async () => {
     setIsSaving(true);

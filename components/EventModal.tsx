@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CalendarEvent } from '../types';
+import { getDailyNote, saveDailyNote } from '../utils/db';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface EventModalProps {
   onDelete?: (id: string) => void;
   selectedDate: string;
   initialEvent?: CalendarEvent | null;
+  onNoteUpdated?: () => void;
 }
 
 const PRESET_COLORS = [
@@ -28,7 +30,8 @@ const EventModal: React.FC<EventModalProps> = ({
   onSave, 
   onDelete,
   selectedDate, 
-  initialEvent 
+  initialEvent,
+  onNoteUpdated
 }) => {
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState('12:00');
@@ -36,24 +39,36 @@ const EventModal: React.FC<EventModalProps> = ({
   const [description, setDescription] = useState('');
   const [isImportant, setIsImportant] = useState(false);
   const [color, setColor] = useState(PRESET_COLORS[0].value);
+  
+  // Daily Note State
+  const [dailyNote, setDailyNote] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   useEffect(() => {
-    if (initialEvent) {
-      setTitle(initialEvent.title);
-      setStartTime(initialEvent.startTime || '12:00');
-      setEndTime(initialEvent.endTime || '13:00');
-      setDescription(initialEvent.description || '');
-      setIsImportant(initialEvent.isImportant);
-      setColor(initialEvent.color || PRESET_COLORS[0].value);
-    } else {
-      setTitle('');
-      setStartTime('12:00');
-      setEndTime('13:00');
-      setDescription('');
-      setIsImportant(false);
-      setColor(PRESET_COLORS[0].value);
+    if (isOpen) {
+      const fetchNote = async () => {
+        const note = await getDailyNote(selectedDate);
+        setDailyNote(note);
+      };
+      fetchNote();
+
+      if (initialEvent) {
+        setTitle(initialEvent.title);
+        setStartTime(initialEvent.startTime || '12:00');
+        setEndTime(initialEvent.endTime || '13:00');
+        setDescription(initialEvent.description || '');
+        setIsImportant(initialEvent.isImportant);
+        setColor(initialEvent.color || PRESET_COLORS[0].value);
+      } else {
+        setTitle('');
+        setStartTime('12:00');
+        setEndTime('13:00');
+        setDescription('');
+        setIsImportant(false);
+        setColor(PRESET_COLORS[0].value);
+      }
     }
-  }, [initialEvent, isOpen]);
+  }, [initialEvent, isOpen, selectedDate]);
 
   if (!isOpen) return null;
 
@@ -75,17 +90,27 @@ const EventModal: React.FC<EventModalProps> = ({
     onClose();
   };
 
+  const handleNoteSave = async () => {
+    setIsSavingNote(true);
+    await saveDailyNote(selectedDate, dailyNote);
+    setIsSavingNote(false);
+    if (onNoteUpdated) onNoteUpdated();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 dark:bg-black/40 backdrop-blur-sm transition-opacity">
-      <div className="bg-white dark:bg-stone-800 rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-stone-100 dark:border-stone-700 fade-in">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-light tracking-tight text-stone-700 dark:text-stone-100">
-            {initialEvent ? 'Edit Moment' : 'New Moment'}
-          </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 dark:bg-black/60 backdrop-blur-md transition-all">
+      <div className="bg-white dark:bg-stone-900 rounded-[2.5rem] p-8 w-full max-w-2xl shadow-2xl border border-stone-100 dark:border-stone-800 fade-in max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-1">Opened Date</span>
+            <h2 className="text-2xl font-serif text-stone-700 dark:text-stone-100 italic">
+              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </h2>
+          </div>
           <button 
             type="button"
             onClick={onClose}
-            className="text-stone-300 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors p-1"
+            className="text-stone-300 dark:text-stone-600 hover:text-[#F5AFAF] transition-all p-2 bg-stone-50 dark:bg-stone-800 rounded-full"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -93,103 +118,103 @@ const EventModal: React.FC<EventModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-medium">Title</label>
-            <input 
-              autoFocus
-              type="text" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-stone-50 dark:bg-stone-900/50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 dark:focus:ring-stone-700 transition-all outline-none text-stone-700 dark:text-stone-200 placeholder:text-stone-300 dark:placeholder:text-stone-700"
-              placeholder="What are you marking?"
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-medium">Start</label>
-              <input 
-                type="time" 
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-stone-50 dark:bg-stone-900/50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 dark:focus:ring-stone-700 outline-none text-stone-700 dark:text-stone-200"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {/* Daily Mark Section */}
+          <div className="space-y-6">
+            <div className="bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800">
+              <div className="flex justify-between items-center mb-4">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Daily Mark</label>
+                {isSavingNote && <span className="text-[8px] text-[#F5AFAF] animate-pulse">Syncing...</span>}
+              </div>
+              <textarea 
+                value={dailyNote}
+                onChange={(e) => setDailyNote(e.target.value)}
+                onBlur={handleNoteSave}
+                placeholder="No reflections recorded yet..."
+                className="w-full bg-transparent border-none focus:ring-0 text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none h-48 placeholder:text-stone-300 dark:placeholder:text-stone-700"
               />
-            </div>
-            <div className="flex-1">
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-medium">End</label>
-              <input 
-                type="time" 
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-stone-50 dark:bg-stone-900/50 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-stone-200 dark:focus:ring-stone-700 outline-none text-stone-700 dark:text-stone-200"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-medium">Color Palette</label>
-            <div className="grid grid-cols-4 gap-3">
-              {PRESET_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setColor(c.value)}
-                  className={`group relative h-10 rounded-xl transition-all duration-300 flex items-center justify-center overflow-hidden
-                    ${color === c.value ? 'ring-2 ring-stone-200 dark:ring-stone-600 ring-offset-2 dark:ring-offset-stone-800 scale-105' : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
-                  style={{ backgroundColor: c.value }}
+              <div className="mt-4 flex justify-end">
+                <button 
+                   onClick={handleNoteSave}
+                   className="text-[9px] uppercase tracking-[0.2em] text-[#F5AFAF] font-bold hover:text-[#a53860] transition-colors"
                 >
-                  {color === c.value && (
-                    <div className="w-1.5 h-1.5 bg-white rounded-full shadow-sm" />
-                  )}
+                  Update Mark
                 </button>
-              ))}
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-medium">Notes</label>
-            <textarea 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-stone-50 dark:bg-stone-900/50 border-none rounded-xl px-4 py-3.5 h-24 resize-none focus:ring-1 focus:ring-stone-200 dark:focus:ring-stone-700 outline-none text-stone-700 dark:text-stone-300 text-sm leading-relaxed placeholder:text-stone-300 dark:placeholder:text-stone-700"
-              placeholder="Reflections, details, or reminders..."
-            />
-          </div>
+          {/* Event Form Section */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-bold">Moment Title</label>
+              <input 
+                autoFocus
+                type="text" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 transition-all outline-none text-stone-700 dark:text-stone-200"
+                placeholder="What's happening?"
+              />
+            </div>
 
-          <div className="flex items-center gap-3 bg-stone-50/50 dark:bg-stone-900/30 p-3 rounded-xl">
-            <input 
-              type="checkbox" 
-              id="important"
-              checked={isImportant}
-              onChange={(e) => setIsImportant(e.target.checked)}
-              className="w-4 h-4 rounded border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 focus:ring-stone-400 accent-stone-800 dark:accent-stone-200"
-            />
-            <label htmlFor="important" className="text-xs text-stone-500 dark:text-stone-400 cursor-pointer select-none font-medium tracking-wide">
-              Mark as Important
-            </label>
-          </div>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-bold">Start</label>
+                <input 
+                  type="time" 
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 outline-none text-stone-700 dark:text-stone-200"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-bold">End</label>
+                <input 
+                  type="time" 
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 outline-none text-stone-700 dark:text-stone-200"
+                />
+              </div>
+            </div>
 
-          <div className="pt-2 flex gap-3">
-            <button 
-              type="submit"
-              className="flex-1 bg-stone-800 dark:bg-stone-100 text-stone-50 dark:text-stone-900 py-4 rounded-2xl text-xs uppercase tracking-[0.2em] font-semibold hover:bg-stone-700 dark:hover:bg-white transition-all shadow-lg shadow-stone-200 dark:shadow-none"
-            >
-              {initialEvent ? 'Save Changes' : 'Record Moment'}
-            </button>
-            {initialEvent && onDelete && (
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-bold">Appearance</label>
+              <div className="grid grid-cols-4 gap-2">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setColor(c.value)}
+                    className={`h-8 rounded-lg transition-all ${color === c.value ? 'ring-2 ring-[#F5AFAF] scale-110 shadow-lg' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
+                    style={{ backgroundColor: c.value }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 flex gap-3">
               <button 
-                type="button"
-                onClick={() => { onDelete(initialEvent.id); onClose(); }}
-                className="px-5 py-4 rounded-2xl text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                type="submit"
+                className="flex-1 bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-stone-700 dark:hover:bg-[#a53860] transition-all shadow-xl shadow-[#F5AFAF]/10"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                {initialEvent ? 'Save Changes' : 'Record Moment'}
               </button>
-            )}
-          </div>
-        </form>
+              {initialEvent && onDelete && (
+                <button 
+                  type="button"
+                  onClick={() => { onDelete(initialEvent.id); onClose(); }}
+                  className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-400 hover:bg-red-100 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

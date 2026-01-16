@@ -91,3 +91,18 @@ export const saveDailyNote = async (date: string, content: string): Promise<void
     request.onerror = () => reject('Error saving note');
   });
 };
+
+export const getAllNoteDates = async (): Promise<string[]> => {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(NOTES_STORE, 'readonly');
+    const store = transaction.objectStore(NOTES_STORE);
+    const request = store.getAll();
+    request.onsuccess = () => {
+      const results = request.result || [];
+      // Filter for non-empty content
+      resolve(results.filter((r: any) => r.content && r.content.trim().length > 0).map((r: any) => r.date));
+    };
+    request.onerror = () => reject('Error fetching note dates');
+  });
+};
