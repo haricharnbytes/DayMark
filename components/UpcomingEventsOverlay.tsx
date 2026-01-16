@@ -8,18 +8,29 @@ interface IndividualCountdownProps {
 
 const IndividualCountdown: React.FC<IndividualCountdownProps> = ({ targetEvent }) => {
   const [timeLeft, setTimeLeft] = useState<CountdownState | null>(null);
+  const [status, setStatus] = useState<'upcoming' | 'active' | 'passed'>('upcoming');
 
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date().getTime();
-      const target = new Date(`${targetEvent.date}T${targetEvent.startTime || '00:00'}`).getTime();
-      const difference = target - now;
+      const targetStart = new Date(`${targetEvent.date}T${targetEvent.startTime || '00:00'}`).getTime();
+      const targetEnd = new Date(`${targetEvent.date}T${targetEvent.endTime || '23:59'}`).getTime();
+      
+      const difference = targetStart - now;
 
-      if (difference <= 0) {
+      if (now > targetEnd) {
+        setStatus('passed');
         setTimeLeft(null);
         return;
       }
 
+      if (now >= targetStart && now <= targetEnd) {
+        setStatus('active');
+        setTimeLeft(null);
+        return;
+      }
+
+      setStatus('upcoming');
       setTimeLeft({
         days: Math.floor(difference / (1000 * 60 * 60 * 24)),
         hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
@@ -33,9 +44,21 @@ const IndividualCountdown: React.FC<IndividualCountdownProps> = ({ targetEvent }
     return () => clearInterval(timer);
   }, [targetEvent]);
 
-  if (!timeLeft) return (
-    <span className="text-[10px] uppercase tracking-widest text-stone-300 font-bold">Passed</span>
+  if (status === 'passed') return (
+    <span className="text-[10px] uppercase tracking-widest text-stone-300 dark:text-stone-700 font-bold">Recently Passed</span>
   );
+
+  if (status === 'active') return (
+    <div className="flex items-center gap-2">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5AFAF] opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5AFAF]"></span>
+      </span>
+      <span className="text-[10px] uppercase tracking-widest text-[#F5AFAF] font-bold animate-pulse">Moment In Progress</span>
+    </div>
+  );
+
+  if (!timeLeft) return null;
 
   const format = (val: number) => val.toString().padStart(2, '0');
 
@@ -114,7 +137,7 @@ const UpcomingEventsOverlay: React.FC<UpcomingEventsOverlayProps> = ({ isOpen, o
                   </p>
                 </div>
                 
-                <div className="pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-stone-100 dark:border-stone-700 md:pl-8">
+                <div className="pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-stone-100 dark:border-stone-700 md:pl-8 min-w-[140px] flex justify-end">
                   <IndividualCountdown targetEvent={event} />
                 </div>
               </div>

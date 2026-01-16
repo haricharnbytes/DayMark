@@ -116,7 +116,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
                   {d}
                 </span>
                 
-                {/* Event Indicator Dot - specifically #a53860 as requested */}
+                {/* Event Indicator Dot */}
                 <div className={`absolute z-10 ${large ? 'bottom-3' : 'bottom-1.5'} flex gap-1 h-1.5 items-center justify-center w-full`}>
                   {hasEvents && (
                     <div 
@@ -200,6 +200,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
 const DailyView: React.FC<{ year: number, month: number, day: number, events: CalendarEvent[], noteDates: string[], onDateClick: (d: number, m: number, eventToEdit?: CalendarEvent) => void }> = ({ year, month, day, events, noteDates, onDateClick }) => {
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [noteContent, setNoteContent] = useState('');
+  const [now, setNow] = useState(Date.now());
   const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   const dayEvents = events.filter(e => e.date === dStr).sort((a,b) => (a.startTime || '').localeCompare(b.startTime || ''));
   const hasNote = noteDates.includes(dStr);
@@ -211,15 +212,22 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
       setNoteContent(note);
     };
     fetchNote();
+
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
   }, [dStr, noteDates]);
 
-  const handleEventClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setExpandedEventId(prev => prev === id ? null : id);
+  const getMomentStatus = (e: CalendarEvent) => {
+    const startTime = new Date(`${e.date}T${e.startTime || '00:00'}`).getTime();
+    const endTime = new Date(`${e.date}T${e.endTime || '23:59'}`).getTime();
+    
+    if (now < startTime) return 'upcoming';
+    if (now >= startTime && now <= endTime) return 'active';
+    return 'passed';
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition" onClick={() => onDateClick(day, month)}>
+    <div className="max-w-3xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition cursor-pointer" onClick={() => onDateClick(day, month)}>
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-16">
         <div>
           <h3 className="text-stone-400 dark:text-stone-500 text-sm uppercase tracking-[0.4em] font-bold mb-3">Focus</h3>
@@ -241,25 +249,44 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
       )}
 
       <div className="space-y-8">
-        <h3 className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold mb-6">Recorded Moments</h3>
-        {dayEvents.length > 0 ? dayEvents.map(e => (
-          <div key={e.id} className="flex gap-4 md:gap-8 items-start group cursor-pointer" onClick={(event) => handleEventClick(event, e.id)}>
-            <div className="text-[11px] md:text-[12px] font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-1.5 w-14 md:w-16 text-right shrink-0 tabular-nums">
-              {e.startTime || 'All Day'}
-            </div>
-            <div className="flex-1 pb-8 border-b border-stone-100 dark:border-stone-800 last:border-0">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full transition-transform duration-500 ${expandedEventId === e.id ? 'scale-150' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                  <h4 className="text-xl md:text-2xl font-bold text-stone-700 dark:text-stone-200">{e.title}</h4>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Recorded Moments</h3>
+          <button 
+            className="text-[9px] uppercase tracking-widest text-[#F5AFAF] font-bold bg-[#F5AFAF]/5 px-3 py-1 rounded-full hover:bg-[#F5AFAF]/10 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDateClick(day, month); }}
+          >
+            Add Moment
+          </button>
+        </div>
+        {dayEvents.length > 0 ? dayEvents.map(e => {
+          const status = getMomentStatus(e);
+          return (
+            <div key={e.id} className="flex gap-4 md:gap-8 items-start group cursor-pointer" onClick={(event) => { event.stopPropagation(); onDateClick(day, month, e); }}>
+              <div className="text-[11px] md:text-[12px] font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-1.5 w-14 md:w-16 text-right shrink-0 tabular-nums">
+                {e.startTime || 'All Day'}
+              </div>
+              <div className="flex-1 pb-8 border-b border-stone-100 dark:border-stone-800 last:border-0">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full transition-transform duration-500 group-hover:scale-125 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <h4 className={`text-xl md:text-2xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
+                  </div>
+                  {status === 'active' && (
+                    <span className="text-[8px] uppercase tracking-[0.2em] bg-[#F5AFAF]/10 text-[#F5AFAF] px-2 py-0.5 rounded-full font-bold animate-pulse">Now</span>
+                  )}
+                  {status === 'passed' && (
+                    <span className="text-[8px] uppercase tracking-[0.2em] text-stone-300 dark:text-stone-700 font-bold">Passed</span>
+                  )}
+                </div>
+                <div>
+                  <p className={`text-sm md:text-base leading-relaxed italic truncate transition-opacity duration-500 ${status === 'passed' ? 'text-stone-300 dark:text-stone-700' : 'text-stone-500 dark:text-stone-400'}`}>
+                    {e.description || 'A quiet, unrecorded moment...'}
+                  </p>
                 </div>
               </div>
-              <div className={`transition-all duration-500 overflow-hidden ${expandedEventId === e.id ? 'max-h-96 opacity-100 mt-4' : 'max-h-6 opacity-60 truncate'}`}>
-                <p className="text-stone-500 dark:text-stone-400 text-sm md:text-base leading-relaxed italic">{e.description || 'A quiet, unrecorded moment...'}</p>
-              </div>
             </div>
-          </div>
-        )) : (
+          );
+        }) : (
           <div className="py-24 text-center text-stone-300 dark:text-stone-700">
             <p className="italic text-3xl mb-4 opacity-50">A clean slate...</p>
             <p className="text-[11px] uppercase tracking-[0.4em] font-bold">Tap to mark the day</p>
@@ -327,20 +354,21 @@ const App: React.FC = () => {
   const upcomingEvents = useMemo(() => getNextEvents(events, 10), [events]);
 
   const handleDateClick = (day: number, month: number, eventToEdit?: CalendarEvent) => {
-    setViewDay(day);
-    setViewMonth(month);
-    const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dateId = `${month}-${day}`;
-    setClickedDateId(dateId);
-    
-    setTimeout(() => {
-      const firstEvent = events.find(e => e.date === dateStr);
+    if (viewMode !== 'daily') {
+      setViewDay(day);
+      setViewMonth(month);
+      setViewMode('daily');
       
-      setSelectedDate(dateStr);
-      setEditingEvent(eventToEdit || firstEvent || null);
-      setIsModalOpen(true);
-      setClickedDateId(null);
-    }, 200);
+      const dateId = `${month}-${day}`;
+      setClickedDateId(dateId);
+      setTimeout(() => setClickedDateId(null), 300);
+      return;
+    }
+
+    const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setSelectedDate(dateStr);
+    setEditingEvent(eventToEdit || null);
+    setIsModalOpen(true);
   };
 
   const handleSaveEvent = async (event: CalendarEvent) => {
@@ -391,6 +419,7 @@ const App: React.FC = () => {
     setViewYear(today.getFullYear());
     setViewMonth(today.getMonth());
     setViewDay(today.getDate());
+    setViewMode('daily');
   };
 
   const months = Array.from({ length: 12 }, (_, i) => i);
@@ -431,8 +460,8 @@ const App: React.FC = () => {
              aria-label="Toggle Events Overlay"
            >
              <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Events</span>
-             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 min-w-[24px] px-1.5 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
-                <span className="text-[10px] font-bold">{upcomingEvents.length}</span>
+             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 min-w-[24px] px-2 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
+                <span className="text-[10px] font-bold">{events.length}</span>
              </div>
            </button>
 
