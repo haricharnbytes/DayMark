@@ -8,12 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.cdnfonts.com/css/denton" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --font-serif: 'Denton', 'DM Serif Display', serif;
-            --font-sans: 'Inter', sans-serif;
+            --font-serif: 'Courier Prime', monospace;
+            --font-sans: 'Courier Prime', monospace;
             --color-accent: #F5AFAF;
             --color-bg: #FCF8F8;
         }
@@ -23,8 +22,8 @@
             color: #4a4a4a;
             -webkit-font-smoothing: antialiased;
         }
-        h1, h2, h3, .font-serif {
-            font-family: var(--font-serif);
+        h1, h2, h3, h4, h5, h6, .font-serif, .font-sans, button, input, textarea, select {
+            font-family: 'Courier Prime', monospace !important;
         }
         .calendar-grid {
             display: grid;
@@ -79,6 +78,15 @@
         /* Prevent scroll jump on content change */
         main {
             min-height: 60vh;
+        }
+
+        /* Adjust tracking for monospaced typewriter feel */
+        * {
+            letter-spacing: -0.01em;
+        }
+        
+        .tracking-widest {
+            letter-spacing: 0.25em !important;
         }
     </style>
 <script type="importmap">

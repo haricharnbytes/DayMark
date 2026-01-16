@@ -15,6 +15,7 @@ import {
 } from './utils/db';
 import EventModal from './components/EventModal';
 import Countdown from './components/Countdown';
+import DailyMarkNote from './components/DailyMarkNote';
 
 type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
 
@@ -89,20 +90,23 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
             <div key={`${month}-${d}`} className="relative group/day">
               <button
                 onClick={() => onDateClick(d, month)}
-                className={`w-full group relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-300
+                className={`w-full group relative aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-500 overflow-hidden
                   ${isClicked ? 'date-pulse scale-110' : ''}
                   ${today 
                     ? 'bg-[#F5AFAF] text-white shadow-lg shadow-[#F5AFAF]/20 scale-110 z-10' 
                     : hasEvents 
                       ? 'bg-[#a53860] text-white shadow-lg shadow-[#a53860]/20 scale-105 z-10' 
-                      : 'hover:bg-stone-100 text-stone-500 hover:text-stone-800'
+                      : 'text-stone-500 hover:text-stone-800 hover:bg-white hover:shadow-md'
                   }`}
               >
-                <span className={`${large ? 'text-base' : 'text-[11px]'} font-medium transition-colors`}>
+                {/* Enhanced Gradient Hover Layer */}
+                <div className={`absolute inset-0 bg-gradient-to-br from-white/40 via-white/5 to-[#F5AFAF]/10 opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out pointer-events-none transform scale-110 group-hover:scale-100 ${today || hasEvents ? 'hidden' : ''}`} />
+                
+                <span className={`relative z-10 ${large ? 'text-base' : 'text-[11px]'} font-medium transition-all duration-300 group-hover:scale-110`}>
                   {d}
                 </span>
                 
-                <div className={`absolute ${large ? 'bottom-2.5' : 'bottom-1.5'} flex gap-0.5 h-1 items-center justify-center w-full`}>
+                <div className={`absolute z-10 ${large ? 'bottom-2.5' : 'bottom-1.5'} flex gap-0.5 h-1 items-center justify-center w-full`}>
                   {dayEvents.slice(0, 3).map((e) => (
                     <div 
                       key={e.id} 
@@ -297,6 +301,12 @@ const App: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [clickedDateId, setClickedDateId] = useState<string|null>(null);
 
+  // Today's date string for the Daily Mark Note
+  const todayDateStr = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, []);
+
   // Sync state with IndexedDB on mount
   useEffect(() => {
     const loadEvents = async () => {
@@ -326,8 +336,6 @@ const App: React.FC = () => {
       const firstEvent = events.find(e => e.date === dateStr);
       
       setSelectedDate(dateStr);
-      // If a specific event was passed (from daily/weekly list), edit it.
-      // Otherwise, edit the first found event on that date, or create new.
       setEditingEvent(eventToEdit || firstEvent || null);
       setIsModalOpen(true);
       setClickedDateId(null);
@@ -337,7 +345,6 @@ const App: React.FC = () => {
   const handleSaveEvent = async (event: CalendarEvent) => {
     try {
       await saveEventToDB(event);
-      // Refresh events from DB to ensure single source of truth
       const updatedEvents = await getAllEvents();
       setEvents(updatedEvents);
     } catch (e) {
@@ -405,6 +412,9 @@ const App: React.FC = () => {
         
         <Countdown upcomingEvents={upcomingEvents} />
       </header>
+
+      {/* Daily Reflection Feature */}
+      <DailyMarkNote date={todayDateStr} />
 
       <ViewSwitcher />
 
