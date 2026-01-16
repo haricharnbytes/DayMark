@@ -59,11 +59,11 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
 
   return (
-    <div className={`${large ? 'p-12 rounded-[3.5rem]' : 'p-8 rounded-[2.5rem]'} bg-stone-900/60 dark:bg-stone-900/40 backdrop-blur-md border border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-700 ease-out group/month`}>
+    <div className={`${large ? 'p-12 rounded-[3.5rem]' : 'p-8 rounded-[2.5rem]'} bg-white dark:bg-stone-900/60 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-700 ease-out group/month`}>
       <div className={`flex items-center justify-between ${large ? 'mb-12' : 'mb-8'} px-1`}>
         <div className="flex items-center gap-4">
           <MonthIcon month={month} />
-          <h3 className={`${large ? 'text-3xl' : 'text-[14px]'} font-bold text-stone-200 tracking-[0.2em] uppercase`}>
+          <h3 className={`${large ? 'text-3xl' : 'text-[14px]'} font-bold text-stone-700 dark:text-stone-200 tracking-[0.2em] uppercase`}>
             {formatMonthName(month)}
           </h3>
         </div>
@@ -71,7 +71,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
       
       <div className={`grid grid-cols-7 ${large ? 'gap-y-6 gap-x-4' : 'gap-y-3 gap-x-2'} flex-1 text-center`}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
-          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-xs' : 'text-[8px]'} uppercase tracking-widest text-stone-600 font-bold mb-2`}>
+          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-xs' : 'text-[8px]'} uppercase tracking-widest text-stone-400 dark:text-stone-600 font-bold mb-2`}>
             {d}
           </div>
         ))}
@@ -99,10 +99,10 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, onDateClick, cli
                     ? 'bg-[#F5AFAF] text-white shadow-xl shadow-[#F5AFAF]/30 z-10' 
                     : hasEvents 
                       ? 'bg-[#a53860] text-white shadow-xl shadow-[#a53860]/30 z-10' 
-                      : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800'
+                      : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
                   }`}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today || hasEvents ? 'hidden' : ''}`} />
+                <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today || hasEvents ? 'hidden' : ''}`} />
                 
                 <span className={`relative z-10 ${large ? 'text-3xl' : 'text-[15px]'} font-bold`}>
                   {d}
@@ -154,12 +154,12 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
         const today = isToday(date.getFullYear(), date.getMonth(), date.getDate());
 
         return (
-          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-6 rounded-[2.5rem] bg-stone-900/40 backdrop-blur-md border border-stone-800 flex flex-col gap-4 min-h-[300px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#F5AFAF]/30' : ''}`}>
+          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-6 rounded-[2.5rem] bg-white dark:bg-stone-900/40 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col gap-4 min-h-[300px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#F5AFAF]/30' : ''}`}>
             <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-widest text-stone-500 font-bold mb-2">
+              <span className="text-[11px] uppercase tracking-widest text-stone-400 dark:text-stone-500 font-bold mb-2">
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </span>
-              <span className={`text-4xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-200'}`}>
+              <span className={`text-4xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
                 {date.getDate()}
               </span>
             </div>
@@ -168,7 +168,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
                 <div 
                   key={e.id} 
                   onClick={(event) => handleEventClick(event, e.id)}
-                  className={`text-[11px] p-3 rounded-xl bg-stone-800/40 border border-stone-700/50 text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
+                  className={`text-[11px] p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
                   <div className="flex items-center justify-between gap-1">
                     <div className="flex items-center gap-2 overflow-hidden">
@@ -198,11 +198,11 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-800 shadow-2xl month-transition" onClick={() => onDateClick(day, month)}>
+    <div className="max-w-2xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-12 rounded-[3.5rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition" onClick={() => onDateClick(day, month)}>
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-16">
         <div>
-          <h3 className="text-stone-500 text-sm uppercase tracking-[0.4em] font-bold mb-3">Focus</h3>
-          <h2 className="text-4xl md:text-6xl font-bold text-stone-100">
+          <h3 className="text-stone-400 dark:text-stone-500 text-sm uppercase tracking-[0.4em] font-bold mb-3">Focus</h3>
+          <h2 className="text-4xl md:text-6xl font-bold text-stone-800 dark:text-stone-100">
             {new Date(dStr + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' })}
           </h2>
         </div>
@@ -212,23 +212,23 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
       <div className="space-y-8">
         {dayEvents.length > 0 ? dayEvents.map(e => (
           <div key={e.id} className="flex gap-4 md:gap-8 items-start group cursor-pointer" onClick={(event) => handleEventClick(event, e.id)}>
-            <div className="text-[11px] md:text-[12px] font-bold text-stone-600 tracking-widest pt-1.5 w-14 md:w-16 text-right shrink-0 tabular-nums">
+            <div className="text-[11px] md:text-[12px] font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-1.5 w-14 md:w-16 text-right shrink-0 tabular-nums">
               {e.startTime || 'All Day'}
             </div>
-            <div className="flex-1 pb-8 border-b border-stone-800 last:border-0">
+            <div className="flex-1 pb-8 border-b border-stone-100 dark:border-stone-800 last:border-0">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full transition-transform duration-500 ${expandedEventId === e.id ? 'scale-150' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                  <h4 className="text-xl md:text-2xl font-bold text-stone-200">{e.title}</h4>
+                  <h4 className="text-xl md:text-2xl font-bold text-stone-700 dark:text-stone-200">{e.title}</h4>
                 </div>
               </div>
               <div className={`transition-all duration-500 overflow-hidden ${expandedEventId === e.id ? 'max-h-96 opacity-100 mt-4' : 'max-h-6 opacity-60 truncate'}`}>
-                <p className="text-stone-400 text-sm md:text-base leading-relaxed italic">{e.description || 'A quiet, unrecorded moment...'}</p>
+                <p className="text-stone-500 dark:text-stone-400 text-sm md:text-base leading-relaxed italic">{e.description || 'A quiet, unrecorded moment...'}</p>
               </div>
             </div>
           </div>
         )) : (
-          <div className="py-24 text-center text-stone-700">
+          <div className="py-24 text-center text-stone-300 dark:text-stone-700">
             <p className="italic text-3xl mb-4 opacity-50">A clean slate...</p>
             <p className="text-[11px] uppercase tracking-[0.4em] font-bold">Tap to mark the day</p>
           </div>
@@ -239,11 +239,15 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
 };
 
 const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('monthly');
+  const [viewMode, setViewMode] = useState<ViewMode>('yearly');
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [viewDay, setViewDay] = useState(new Date().getDate());
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved ? saved === 'dark' : true;
+  });
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   
@@ -254,8 +258,14 @@ const App: React.FC = () => {
   const [justSavedDateStr, setJustSavedDateStr] = useState<string|null>(null);
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   const activeDateStr = useMemo(() => {
     return `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(viewDay).padStart(2, '0')}`;
@@ -362,14 +372,14 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-stone-600 italic text-2xl animate-pulse">Entering DayMark...</div>
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-black">
+        <div className="text-stone-400 dark:text-stone-600 italic text-2xl animate-pulse">Entering DayMark...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-stone-200 px-4 py-12 md:py-24 max-w-7xl mx-auto selection:bg-[#F5AFAF]/20 overflow-x-hidden">
+    <div className="min-h-screen bg-stone-50 dark:bg-black text-stone-800 dark:text-stone-200 px-4 py-12 md:py-24 max-w-7xl mx-auto selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
       
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.05] overflow-hidden -z-10">
         <svg className="absolute -top-32 -right-32 w-[30rem] h-[30rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
@@ -377,12 +387,30 @@ const App: React.FC = () => {
       </div>
 
       <header className="mb-16 text-center fade-in relative">
+        <div className="absolute top-0 right-0 p-4">
+           <button 
+             onClick={() => setIsDarkMode(!isDarkMode)}
+             className="p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
+             aria-label="Toggle Theme"
+           >
+             {isDarkMode ? (
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+               </svg>
+             ) : (
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+               </svg>
+             )}
+           </button>
+        </div>
+
         <div className="inline-flex items-center justify-center p-4 bg-[#F5AFAF]/10 rounded-3xl mb-8">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#F5AFAF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
           </svg>
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold text-stone-100 tracking-[0.3em] uppercase mb-6 md:pl-6">
+        <h1 className="text-4xl md:text-6xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.3em] uppercase mb-6 md:pl-6">
           DayMark
         </h1>
         <div className="h-px w-20 bg-[#F5AFAF]/30 mx-auto mb-12"></div>
@@ -393,12 +421,12 @@ const App: React.FC = () => {
       {/* Persistent Control Bar Section */}
       <div className="flex flex-col gap-10 mb-16 fade-in px-4">
         {/* View Selection Tabs */}
-        <div className="flex items-center justify-center gap-2 bg-stone-900/40 p-2 rounded-full backdrop-blur-md border border-stone-800 max-w-sm mx-auto shadow-sm w-full">
+        <div className="flex items-center justify-center gap-2 bg-white dark:bg-stone-900/40 p-2 rounded-full backdrop-blur-md border border-stone-200 dark:border-stone-800 max-w-sm mx-auto shadow-sm w-full">
           {(['yearly', 'monthly', 'weekly', 'daily'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`flex-1 px-3 py-2.5 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#F5AFAF] text-white shadow-lg' : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800/50'}`}
+              className={`flex-1 px-3 py-2.5 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#F5AFAF] text-white shadow-lg' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/50'}`}
             >
               {mode[0]}<span className="hidden sm:inline">{mode.slice(1)}</span>
             </button>
@@ -407,7 +435,7 @@ const App: React.FC = () => {
 
         {/* Navigation Strip - Stable Alignment */}
         <div className="flex items-center justify-between max-w-4xl mx-auto w-full gap-4">
-          <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-stone-700 hover:text-stone-200 transition-all shrink-0">
+          <button onClick={() => navigate(-1)} className="group flex items-center gap-4 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all shrink-0">
             <div className="p-3 rounded-2xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </div>
@@ -415,18 +443,18 @@ const App: React.FC = () => {
           </button>
           
           <div className="flex flex-col items-center gap-1 md:gap-2 text-center flex-1 min-w-0">
-            <h2 className="text-2xl md:text-5xl font-bold text-stone-100 tracking-[0.05em] leading-tight truncate w-full">
+            <h2 className="text-2xl md:text-5xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.05em] leading-tight truncate w-full">
               {navLabel}
             </h2>
             <button 
               onClick={jumpToToday}
-              className="text-[9px] uppercase tracking-[0.3em] text-[#F5AFAF] hover:text-white transition-colors font-bold py-1"
+              className="text-[9px] uppercase tracking-[0.3em] text-[#F5AFAF] hover:text-[#a53860] dark:hover:text-white transition-colors font-bold py-1"
             >
               Today
             </button>
           </div>
 
-          <button onClick={() => navigate(1)} className="group flex items-center gap-4 text-stone-700 hover:text-stone-200 transition-all text-right shrink-0">
+          <button onClick={() => navigate(1)} className="group flex items-center gap-4 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all text-right shrink-0">
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold hidden md:inline">Next</span>
             <div className="p-3 rounded-2xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -441,7 +469,7 @@ const App: React.FC = () => {
               <button 
                 key={m} 
                 onClick={() => setViewMonth(m)} 
-                className={`px-4 py-1.5 rounded-full text-[9px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${viewMonth === m ? 'bg-stone-100 text-stone-900 scale-105 shadow-md' : 'text-stone-600 hover:text-stone-400'}`}
+                className={`px-4 py-1.5 rounded-full text-[9px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${viewMonth === m ? 'bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 scale-105 shadow-md' : 'text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400'}`}
               >
                 {formatMonthName(m).slice(0, 3)}
               </button>
@@ -494,8 +522,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="mt-20 text-center text-stone-700 text-[10px] uppercase tracking-[0.5em] pb-24 flex flex-col items-center gap-6">
-        <div className="h-px w-12 bg-stone-800"></div>
+      <footer className="mt-20 text-center text-stone-400 dark:text-stone-700 text-[10px] uppercase tracking-[0.5em] pb-24 flex flex-col items-center gap-6">
+        <div className="h-px w-12 bg-stone-200 dark:bg-stone-800"></div>
         <span className="italic capitalize text-stone-500 text-sm">Crafted for Clarity &bull; {new Date().getFullYear()}</span>
       </footer>
 
