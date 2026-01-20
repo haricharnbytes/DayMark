@@ -107,19 +107,19 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
   if (isFinalized && !showEditor) {
     return (
       <div className="max-w-lg mx-auto mb-10 px-4 fade-in">
-        <div className={`bg-stone-800 dark:bg-stone-900 rounded-[2rem] p-8 border border-stone-700 dark:border-stone-800 shadow-2xl flex flex-col items-center text-center group transition-all duration-700 ${isAnimating ? 'scale-110 opacity-0' : 'scale-100 opacity-100 success-flourish'}`}>
+        <div className={`bg-white dark:bg-stone-900 rounded-[2rem] p-8 border border-stone-100 dark:border-stone-800 shadow-xl flex flex-col items-center text-center group transition-all duration-700 ${isAnimating ? 'scale-110 opacity-0' : 'scale-100 opacity-100 success-flourish'}`}>
           <div className="w-12 h-12 bg-[#F5AFAF] rounded-full flex items-center justify-center mb-6 shadow-lg shadow-[#F5AFAF]/20 animate-bounce">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold mb-2">Completion</span>
-          <h2 className="text-xl font-serif text-white italic mb-2">Today's note is marked</h2>
+          <h2 className="text-xl font-serif text-stone-800 dark:text-stone-100 italic mb-2">Today's note is marked</h2>
           <p className="text-stone-400 text-[11px] uppercase tracking-widest font-medium mb-8">Reflections for {formattedDate} are safe.</p>
           
           <button 
             onClick={() => setShowEditor(true)}
-            className="text-[9px] uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors py-2 px-6 border border-stone-700 rounded-full hover:bg-stone-800 active:scale-95"
+            className="text-[9px] uppercase tracking-[0.2em] text-stone-500 hover:text-stone-800 dark:hover:text-white transition-colors py-2 px-6 border border-stone-200 dark:border-stone-700 rounded-full hover:bg-stone-50 dark:hover:bg-stone-800 active:scale-95"
           >
             Review Mark
           </button>

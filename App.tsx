@@ -19,6 +19,7 @@ import EventModal, { ICON_MAP } from './components/EventModal';
 import Countdown from './components/Countdown';
 import DailyMarkNote from './components/DailyMarkNote';
 import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
+import Login from './components/Login';
 
 type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
 
@@ -64,19 +65,19 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
 
   return (
-    <div className={`${large ? 'p-12 rounded-[3.5rem]' : 'p-5 rounded-[2rem]'} bg-white dark:bg-stone-900/60 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-700 ease-out group/month`}>
-      <div className={`flex items-center justify-between ${large ? 'mb-12' : 'mb-5'} px-1`}>
+    <div className={`${large ? 'p-8 rounded-[2.5rem]' : 'p-4 rounded-[1.5rem]'} bg-white dark:bg-stone-900/60 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-700 ease-out group/month mx-auto w-full`}>
+      <div className={`flex items-center justify-between ${large ? 'mb-8' : 'mb-2.5'} px-1`}>
         <div className="flex items-center gap-3">
           {!large && <MonthIcon month={month} />}
-          <h3 className={`${large ? 'text-3xl' : 'text-[12px]'} font-bold text-stone-700 dark:text-stone-200 tracking-[0.2em] uppercase`}>
+          <h3 className={`${large ? 'text-2xl' : 'text-[11px]'} font-bold text-stone-700 dark:text-stone-200 tracking-[0.2em] uppercase`}>
             {formatMonthName(month)}
           </h3>
         </div>
       </div>
       
-      <div className={`grid grid-cols-7 ${large ? 'gap-y-6 gap-x-4' : 'gap-y-2 gap-x-1.5'} flex-1 text-center`}>
+      <div className={`grid grid-cols-7 ${large ? 'gap-y-4 gap-x-3' : 'gap-y-1.5 gap-x-1'} flex-1 text-center`}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
-          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-xs' : 'text-[8px]'} uppercase tracking-widest text-stone-400 dark:text-stone-600 font-bold mb-1`}>
+          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-xs' : 'text-[7px]'} uppercase tracking-widest text-stone-400 dark:text-stone-600 font-bold mb-0.5`}>
             {d}
           </div>
         ))}
@@ -99,7 +100,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
             <div key={`${month}-${d}`} className="relative group/day">
               <button
                 onClick={() => onDateClick(d, month)}
-                className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-xl overflow-hidden
+                className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-lg overflow-hidden
                   ${isClicked ? 'date-pulse z-20' : ''}
                   ${isJustSaved ? 'success-flourish z-20' : ''}
                   ${active ? 'ring-1.5 ring-[#F5AFAF]/60 shadow-lg shadow-[#F5AFAF]/5 z-10' : ''}
@@ -111,18 +112,18 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
                 <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
                 
                 {hasNote && !today && (
-                  <div className={`absolute ${large ? 'top-2 right-2 w-1.5 h-1.5' : 'top-1 right-1 w-1 h-1'} rounded-full bg-[#F5AFAF]/60 animate-pulse`} />
+                  <div className={`absolute ${large ? 'top-2 right-2 w-1.5 h-1.5' : 'top-1 right-1 w-0.5 h-0.5'} rounded-full bg-[#F5AFAF]/60 animate-pulse`} />
                 )}
 
-                <span className={`relative z-10 ${large ? 'text-3xl' : 'text-[13px]'} font-bold`}>
+                <span className={`relative z-10 ${large ? 'text-xl' : 'text-[12px]'} font-bold`}>
                   {d}
                 </span>
                 
                 {/* Event Indicator Dot */}
-                <div className={`absolute z-10 ${large ? 'bottom-3' : 'bottom-1'} flex gap-1 h-1 items-center justify-center w-full`}>
+                <div className={`absolute z-10 ${large ? 'bottom-2' : 'bottom-1'} flex gap-1 h-1 items-center justify-center w-full`}>
                   {hasEvents && (
                     <div 
-                      className={`rounded-full transition-all ${large ? 'w-2 h-2' : 'w-1 h-1'} ${today ? 'bg-white' : 'bg-[#a53860]'}`} 
+                      className={`rounded-full transition-all ${large ? 'w-1.5 h-1.5' : 'w-1 h-1'} ${today ? 'bg-white' : 'bg-[#a53860]'}`} 
                     />
                   )}
                 </div>
@@ -292,6 +293,9 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
 };
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('daymark_auth') === 'true';
+  });
   const [viewMode, setViewMode] = useState<ViewMode>('yearly');
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
@@ -299,7 +303,8 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true;
+    // Default to light mode (false) if no preference saved
+    return saved ? saved === 'dark' : false;
   });
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -327,6 +332,7 @@ const App: React.FC = () => {
   }, [viewYear, viewMonth, viewDay]);
 
   const refreshData = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const storedEvents = await getAllEvents();
       const storedNoteDates = await getAllNoteDates();
@@ -335,10 +341,14 @@ const App: React.FC = () => {
     } catch (e) {
       console.error('DayMark Refresh Error:', e);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const loadInitial = async () => {
+      if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
       try {
         await refreshData();
       } catch (e) {
@@ -348,7 +358,7 @@ const App: React.FC = () => {
       }
     };
     loadInitial();
-  }, [refreshData]);
+  }, [refreshData, isAuthenticated]);
 
   const upcomingEvents = useMemo(() => getNextEvents(events, 10), [events]);
 
@@ -417,6 +427,11 @@ const App: React.FC = () => {
     setViewDay(today.getDate());
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('daymark_auth');
+    setIsAuthenticated(false);
+  };
+
   const months = Array.from({ length: 12 }, (_, i) => i);
 
   const navLabel = useMemo(() => {
@@ -433,7 +448,7 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-8">
           <div className="w-16 h-16 border-t-2 border-[#F5AFAF] rounded-full animate-spin"></div>
           <div className="text-[#F5AFAF] tracking-[0.5em] uppercase text-xs font-bold animate-pulse">Entering DayMark</div>
@@ -442,8 +457,12 @@ const App: React.FC = () => {
     );
   }
 
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-black text-stone-800 dark:text-stone-200 px-6 md:px-12 py-12 md:py-20 w-full selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
+    <div className="min-h-screen bg-white dark:bg-black text-stone-800 dark:text-stone-200 px-6 md:px-12 py-12 md:py-20 w-full selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
       
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.05] overflow-hidden -z-10">
         <svg className="absolute -top-32 -right-32 w-[40rem] h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
@@ -477,6 +496,16 @@ const App: React.FC = () => {
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                </svg>
              )}
+           </button>
+
+           <button 
+             onClick={handleLogout}
+             className="p-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-red-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
+             aria-label="Logout"
+           >
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+             </svg>
            </button>
         </div>
 
@@ -557,7 +586,7 @@ const App: React.FC = () => {
 
       <main className="fade-in min-h-[60vh] w-full" style={{animationDelay: '0.2s'}}>
         {viewMode === 'yearly' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
             {months.map(m => (
               <MonthView 
                 key={m} 
@@ -575,7 +604,7 @@ const App: React.FC = () => {
         )}
 
         {viewMode === 'monthly' && (
-          <div className="w-full">
+          <div className="w-full max-w-4xl mx-auto px-4">
              <div className="month-transition" key={`${viewYear}-${viewMonth}`}>
                <MonthView 
                  year={viewYear} 
@@ -603,7 +632,15 @@ const App: React.FC = () => {
 
       <footer className="mt-32 text-center text-stone-400 dark:text-stone-700 text-[11px] uppercase tracking-[0.6em] pb-32 flex flex-col items-center gap-8">
         <div className="h-px w-20 bg-stone-200 dark:bg-stone-800"></div>
-        <span className="italic capitalize text-stone-500 text-lg">Mindful Tracking &bull; DayMark &bull; {new Date().getFullYear()}</span>
+        <div className="flex flex-col gap-4">
+          <span className="italic capitalize text-stone-500 text-lg">Mindful Tracking &bull; DayMark &bull; {new Date().getFullYear()}</span>
+          <button 
+            onClick={handleLogout}
+            className="text-[9px] uppercase tracking-[0.3em] text-stone-500 hover:text-[#F5AFAF] transition-colors"
+          >
+            Lock Workspace
+          </button>
+        </div>
       </footer>
 
       <EventModal 
