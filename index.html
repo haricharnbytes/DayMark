@@ -11,7 +11,6 @@
         darkMode: 'class',
       };
       
-      // Flash prevention: apply theme before page render
       (function() {
         const theme = localStorage.getItem('theme') || 'dark';
         if (theme === 'dark') {
@@ -25,25 +24,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <style>
-        @font-face {
-            font-family: 'JohnDoe Regular';
-            src: local('JohnDoe Regular');
-            font-weight: normal;
-            font-style: normal;
-        }
-
         :root {
-            --font-serif: 'JohnDoe Regular', 'Courier Prime', monospace;
-            --font-sans: 'JohnDoe Regular', 'Courier Prime', monospace;
+            --font-sans: 'Courier Prime', monospace;
             --color-accent: #F5AFAF;
-            --color-bg: #000000;
         }
         body {
             font-family: var(--font-sans);
-            background-color: var(--color-bg);
+            background-color: #000000;
             color: #d6d3d1;
             -webkit-font-smoothing: antialiased;
-            transition: background-color 0.5s ease, color 0.5s ease;
             margin: 0;
             overflow-x: hidden;
         }
@@ -51,12 +40,8 @@
             background-color: #000000;
             color: #e7e5e4; 
         }
-        h1, h2, h3, h4, h5, h6, .font-serif, .font-sans, button, input, textarea, select {
+        h1, h2, h3, h4, h5, h6, button, input, textarea, select {
             font-family: var(--font-sans) !important;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
         }
         .fade-in {
             animation: fadeIn 0.8s ease-out forwards;
@@ -84,9 +69,6 @@
             background: #27272a;
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3f3f46;
-        }
         
         .date-pulse {
             animation: datePulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -108,7 +90,6 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 175, 175, 0); }
         }
 
-        /* Subtle tactile hover and active states for calendar dates */
         .calendar-date-btn {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -116,18 +97,9 @@
             transform: translateY(-2px) scale(1.05);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
-        .calendar-date-btn:active {
-            transform: translateY(0px) scale(0.96);
-            transition: all 0.1s ease;
-        }
-
-        main {
-            min-height: 60vh;
-        }
 
         * {
             letter-spacing: -0.01em;
-            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
         }
         
         .tracking-widest {
@@ -146,5 +118,7 @@
 </head>
 <body class="bg-black">
     <div id="root"></div>
+    <!-- Essential entry point for the React application -->
+    <script type="module" src="index.tsx"></script>
 </body>
 </html>

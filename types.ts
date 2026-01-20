@@ -8,6 +8,8 @@ export interface CalendarEvent {
   description?: string; // Mapped to 'notes' in prompt
   isImportant: boolean;
   color?: string; // Hex color code
+  // Added icon property to support event categorization in UI
+  icon?: string;
   createdAt: number;
 }
 

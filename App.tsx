@@ -15,7 +15,7 @@ import {
   getAllNoteDates,
   getDailyNote
 } from './utils/db';
-import EventModal from './components/EventModal';
+import EventModal, { ICON_MAP } from './components/EventModal';
 import Countdown from './components/Countdown';
 import DailyMarkNote from './components/DailyMarkNote';
 import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
@@ -50,13 +50,14 @@ interface MonthProps {
   month: number;
   events: CalendarEvent[];
   noteDates: string[];
+  activeDateStr: string;
   onDateClick: (day: number, month: number, eventToEdit?: CalendarEvent) => void;
   clickedDateId: string | null;
   justSavedDateStr: string | null;
   large?: boolean;
 }
 
-const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDateClick, clickedDateId, justSavedDateStr, large = false }) => {
+const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activeDateStr, onDateClick, clickedDateId, justSavedDateStr, large = false }) => {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -90,6 +91,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
           const hasEvents = dayEvents.length > 0;
           const hasNote = noteDates.includes(dateStr);
           const today = isToday(year, month, d);
+          const active = activeDateStr === dateStr;
           const isClicked = clickedDateId === `${month}-${d}`;
           const isJustSaved = justSavedDateStr === dateStr;
 
@@ -100,6 +102,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
                 className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-2xl overflow-hidden
                   ${isClicked ? 'date-pulse z-20' : ''}
                   ${isJustSaved ? 'success-flourish z-20' : ''}
+                  ${active ? 'ring-2 ring-[#F5AFAF]/60 shadow-lg shadow-[#F5AFAF]/5 z-10' : ''}
                   ${today 
                     ? 'bg-[#F5AFAF] text-white shadow-xl shadow-[#F5AFAF]/30 z-10' 
                     : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -107,7 +110,6 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, onDat
               >
                 <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
                 
-                {/* Journal/Mark Indicator */}
                 {hasNote && !today && (
                   <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-[#F5AFAF]/60 animate-pulse" />
                 )}
@@ -181,11 +183,14 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
                   onClick={(event) => handleEventClick(event, e.id)}
                   className={`text-[11px] p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                      <span className="font-bold truncate">{e.title}</span>
-                    </div>
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    {e.icon && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 shrink-0 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {ICON_MAP[e.icon]}
+                      </svg>
+                    )}
+                    <span className="font-bold truncate">{e.title}</span>
                   </div>
                 </div>
               ))}
@@ -269,6 +274,11 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full transition-transform duration-500 group-hover:scale-125 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    {e.icon && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {ICON_MAP[e.icon]}
+                      </svg>
+                    )}
                     <h4 className={`text-xl md:text-2xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
                   </div>
                   {status === 'active' && (
@@ -298,7 +308,7 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
 };
 
 const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('yearly');
+  const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
   const [viewDay, setViewDay] = useState(new Date().getDate());
@@ -336,8 +346,8 @@ const App: React.FC = () => {
     try {
       const storedEvents = await getAllEvents();
       const storedNoteDates = await getAllNoteDates();
-      setEvents(storedEvents);
-      setNoteDates(storedNoteDates);
+      setEvents(storedEvents || []);
+      setNoteDates(storedNoteDates || []);
     } catch (e) {
       console.error('DayMark Refresh Error:', e);
     }
@@ -345,8 +355,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const loadInitial = async () => {
-      await refreshData();
-      setIsLoading(false);
+      try {
+        await refreshData();
+      } catch (e) {
+        console.error('Initialization failed:', e);
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadInitial();
   }, [refreshData]);
@@ -354,19 +369,25 @@ const App: React.FC = () => {
   const upcomingEvents = useMemo(() => getNextEvents(events, 10), [events]);
 
   const handleDateClick = (day: number, month: number, eventToEdit?: CalendarEvent) => {
-    if (viewMode !== 'daily') {
-      setViewDay(day);
+    if (viewMode === 'yearly') {
       setViewMonth(month);
-      setViewMode('daily');
-      
-      const dateId = `${month}-${day}`;
-      setClickedDateId(dateId);
-      setTimeout(() => setClickedDateId(null), 300);
+      setViewDay(day);
+      setViewMode('monthly');
       return;
     }
 
-    const dateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    setSelectedDate(dateStr);
+    const targetDateStr = `${viewYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    if (targetDateStr !== activeDateStr && viewMode !== 'daily') {
+        setViewDay(day);
+        setViewMonth(month);
+        const dateId = `${month}-${day}`;
+        setClickedDateId(dateId);
+        setTimeout(() => setClickedDateId(null), 300);
+        return;
+    }
+
+    setSelectedDate(targetDateStr);
     setEditingEvent(eventToEdit || null);
     setIsModalOpen(true);
   };
@@ -419,7 +440,6 @@ const App: React.FC = () => {
     setViewYear(today.getFullYear());
     setViewMonth(today.getMonth());
     setViewDay(today.getDate());
-    setViewMode('daily');
   };
 
   const months = Array.from({ length: 12 }, (_, i) => i);
@@ -438,8 +458,11 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-black">
-        <div className="text-stone-400 dark:text-stone-600 italic text-2xl animate-pulse">Entering DayMark...</div>
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-12 h-12 border-t-2 border-[#F5AFAF] rounded-full animate-spin"></div>
+          <div className="text-[#F5AFAF] tracking-[0.4em] uppercase text-[10px] font-bold animate-pulse">Entering DayMark</div>
+        </div>
       </div>
     );
   }
@@ -539,7 +562,7 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Secondary Month Navigator - Preserves space when hidden to avoid jumps if possible */}
+        {/* Secondary Month Navigator */}
         <div className={`transition-all duration-500 overflow-hidden ${viewMode === 'monthly' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
           <div className="flex justify-center flex-wrap gap-2 md:gap-3 max-w-4xl mx-auto py-2">
             {months.map(m => (
@@ -567,6 +590,7 @@ const App: React.FC = () => {
                 month={m} 
                 events={events} 
                 noteDates={noteDates}
+                activeDateStr={activeDateStr}
                 onDateClick={handleDateClick} 
                 clickedDateId={clickedDateId}
                 justSavedDateStr={justSavedDateStr}
@@ -583,6 +607,7 @@ const App: React.FC = () => {
                  month={viewMonth} 
                  events={events} 
                  noteDates={noteDates}
+                 activeDateStr={activeDateStr}
                  onDateClick={handleDateClick} 
                  clickedDateId={clickedDateId} 
                  justSavedDateStr={justSavedDateStr}

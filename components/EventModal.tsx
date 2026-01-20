@@ -24,6 +24,25 @@ const PRESET_COLORS = [
   { name: 'Sand', value: '#e6d2b5' },
 ];
 
+export const ICON_MAP: Record<string, React.ReactNode> = {
+  'work': <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />,
+  'social': <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
+  'wellness': <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+  'travel': <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
+  'food': <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" />,
+  'learn': <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 01-2.5-2.5V4.5z" />,
+  'hobby': <path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zm12-2a3 3 0 11-6 0 3 3 0 016 0z" />,
+  'star': <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
+};
+
+// Fallback for crypto.randomUUID for non-secure contexts
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 const EventModal: React.FC<EventModalProps> = ({ 
   isOpen, 
   onClose, 
@@ -39,8 +58,8 @@ const EventModal: React.FC<EventModalProps> = ({
   const [description, setDescription] = useState('');
   const [isImportant, setIsImportant] = useState(false);
   const [color, setColor] = useState(PRESET_COLORS[0].value);
+  const [icon, setIcon] = useState<string | undefined>(undefined);
   
-  // Daily Note State
   const [dailyNote, setDailyNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
@@ -60,6 +79,7 @@ const EventModal: React.FC<EventModalProps> = ({
         setDescription(initialEvent.description || '');
         setIsImportant(initialEvent.isImportant);
         setColor(initialEvent.color || PRESET_COLORS[0].value);
+        setIcon(initialEvent.icon);
       } else {
         setTitle('');
         setStartTime('12:00');
@@ -67,9 +87,9 @@ const EventModal: React.FC<EventModalProps> = ({
         setDescription('');
         setIsImportant(false);
         setColor(PRESET_COLORS[0].value);
+        setIcon(undefined);
       }
     }
-    // Reset feedback when modal opens for a new date
     setShowSavedFeedback(false);
   }, [initialEvent, isOpen, selectedDate]);
 
@@ -80,7 +100,7 @@ const EventModal: React.FC<EventModalProps> = ({
     if (!title.trim()) return;
 
     onSave({
-      id: initialEvent?.id || crypto.randomUUID(),
+      id: initialEvent?.id || generateId(),
       title,
       date: selectedDate,
       startTime,
@@ -88,6 +108,7 @@ const EventModal: React.FC<EventModalProps> = ({
       description,
       isImportant,
       color,
+      icon,
       createdAt: initialEvent?.createdAt || Date.now()
     });
     onClose();
@@ -100,8 +121,6 @@ const EventModal: React.FC<EventModalProps> = ({
     setIsSavingNote(false);
     setShowSavedFeedback(true);
     if (onNoteUpdated) onNoteUpdated();
-    
-    // Hide feedback after delay
     setTimeout(() => setShowSavedFeedback(false), 2000);
   };
 
@@ -127,7 +146,6 @@ const EventModal: React.FC<EventModalProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Daily Mark Section */}
           <div className="space-y-6">
             <div className="bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800 transition-all duration-500">
               <div className="flex justify-between items-center mb-4">
@@ -168,7 +186,6 @@ const EventModal: React.FC<EventModalProps> = ({
             </div>
           </div>
 
-          {/* Event Form Section */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-2 font-bold">Moment Title</label>
@@ -204,7 +221,32 @@ const EventModal: React.FC<EventModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-bold">Appearance</label>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-bold">Icon</label>
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIcon(undefined)}
+                  className={`flex items-center justify-center h-10 rounded-xl transition-all border ${!icon ? 'border-[#F5AFAF] bg-[#F5AFAF]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-600" />
+                </button>
+                {Object.keys(ICON_MAP).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setIcon(key)}
+                    className={`flex items-center justify-center h-10 rounded-xl transition-all border ${icon === key ? 'border-[#F5AFAF] bg-[#F5AFAF]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {ICON_MAP[key]}
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-bold">Color Theme</label>
               <div className="grid grid-cols-4 gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
