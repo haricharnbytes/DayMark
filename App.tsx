@@ -19,6 +19,7 @@ import EventModal, { ICON_MAP } from './components/EventModal';
 import Countdown from './components/Countdown';
 import DailyMarkNote from './components/DailyMarkNote';
 import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
+import SyncOverlay from './components/SyncOverlay';
 import Login from './components/Login';
 
 type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
@@ -90,6 +91,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayEvents = events.filter(e => e.date === dateStr);
           const hasEvents = dayEvents.length > 0;
+          const primaryEventColor = hasEvents ? (dayEvents[0].color || '#F5AFAF') : '#F5AFAF';
           const hasNote = noteDates.includes(dateStr);
           const today = isToday(year, month, d);
           const active = activeDateStr === dateStr;
@@ -123,7 +125,8 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
                 <div className={`absolute z-10 ${large ? 'bottom-2' : 'bottom-1'} flex gap-1 h-1 items-center justify-center w-full`}>
                   {hasEvents && (
                     <div 
-                      className={`rounded-full transition-all ${large ? 'w-1.5 h-1.5' : 'w-1 h-1'} ${today ? 'bg-white' : 'bg-[#a53860]'}`} 
+                      className={`rounded-full transition-all ${large ? 'w-1.5 h-1.5 shadow-[0_0_5px_rgba(0,0,0,0.1)]' : 'w-1 h-1'} ${today ? 'bg-white' : ''}`}
+                      style={!today ? { backgroundColor: primaryEventColor } : {}}
                     />
                   )}
                 </div>
@@ -185,7 +188,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
                   className={`text-[12px] p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0 border border-black/5 dark:border-white/10" style={{ backgroundColor: e.color || '#F5AFAF' }} />
                     <span className="font-bold truncate">{e.title}</span>
                   </div>
                 </div>
@@ -268,7 +271,7 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
               <div className="flex-1 pb-10 border-b border-stone-100 dark:border-stone-800 last:border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-3.5 h-3.5 rounded-full transition-transform duration-500 group-hover:scale-125 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <div className={`w-4 h-4 rounded-full transition-transform duration-500 group-hover:scale-125 border border-black/5 dark:border-white/10 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
                     <h4 className={`text-2xl md:text-3xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
                   </div>
                   {status === 'active' && (
@@ -303,19 +306,36 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
-    // Default to light mode (false) if no preference saved
     return saved ? saved === 'dark' : false;
   });
 
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [noteDates, setNoteDates] = useState<string[]>([]);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showEventsOverlay, setShowEventsOverlay] = useState(false);
+  const [showSyncOverlay, setShowSyncOverlay] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [clickedDateId, setClickedDateId] = useState<string|null>(null);
   const [justSavedDateStr, setJustSavedDateStr] = useState<string|null>(null);
+
+  useEffect(() => {
+    const onStart = () => setSyncStatus('syncing');
+    const onEnd = () => { setSyncStatus('idle'); refreshData(); };
+    const onError = () => setSyncStatus('error');
+
+    window.addEventListener('daymark-sync-start', onStart);
+    window.addEventListener('daymark-sync-complete', onEnd);
+    window.addEventListener('daymark-sync-error', onError);
+
+    return () => {
+      window.removeEventListener('daymark-sync-start', onStart);
+      window.removeEventListener('daymark-sync-complete', onEnd);
+      window.removeEventListener('daymark-sync-error', onError);
+    };
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -429,6 +449,8 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('daymark_auth');
+    localStorage.removeItem('daymark_cloud_id');
+    localStorage.removeItem('daymark_last_sync');
     setIsAuthenticated(false);
   };
 
@@ -471,6 +493,19 @@ const App: React.FC = () => {
 
       <header className="mb-20 text-center fade-in relative">
         <div className="absolute top-0 right-0 flex gap-4">
+           <button 
+             onClick={() => setShowSyncOverlay(true)}
+             className={`flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#F5AFAF]/20' : ''}`}
+             aria-label="Cloud Status"
+           >
+             <span className="text-xs uppercase tracking-[0.3em] font-bold">
+               {syncStatus === 'syncing' ? 'Syncing' : 'Cloud'}
+             </span>
+             <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${syncStatus === 'syncing' ? 'animate-spin text-[#F5AFAF]' : ''} ${syncStatus === 'error' ? 'text-red-400' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+             </svg>
+           </button>
+
            <button 
              onClick={() => setShowEventsOverlay(true)}
              className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group"
@@ -657,6 +692,12 @@ const App: React.FC = () => {
         isOpen={showEventsOverlay}
         onClose={() => setShowEventsOverlay(false)}
         upcomingEvents={upcomingEvents}
+      />
+
+      <SyncOverlay 
+        isOpen={showSyncOverlay} 
+        onClose={() => setShowSyncOverlay(false)}
+        onSyncComplete={refreshData}
       />
     </div>
   );

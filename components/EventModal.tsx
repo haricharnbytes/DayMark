@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CalendarEvent } from '../types';
 import { getDailyNote, saveDailyNote } from '../utils/db';
 
@@ -14,11 +14,10 @@ interface EventModalProps {
 }
 
 const PRESET_COLORS = [
-  { name: 'Stone', value: '#d6d3d1' },
   { name: 'Sage', value: '#b9c9b7' },
   { name: 'Terracotta', value: '#d9a58e' },
   { name: 'Dusk', value: '#6594B1' },
-  { name: 'Blossom', value: '#DDAED3' },
+  { name: 'Blossom', value: '#F5AFAF' },
   { name: 'Lavender', value: '#c3b9d9' },
   { name: 'Sky', value: '#b7c9d9' },
   { name: 'Sand', value: '#e6d2b5' },
@@ -35,7 +34,6 @@ export const ICON_MAP: Record<string, React.ReactNode> = {
   'star': <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
 };
 
-// Fallback for crypto.randomUUID for non-secure contexts
 const generateId = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -57,12 +55,14 @@ const EventModal: React.FC<EventModalProps> = ({
   const [endTime, setEndTime] = useState('13:00');
   const [description, setDescription] = useState('');
   const [isImportant, setIsImportant] = useState(false);
-  const [color, setColor] = useState(PRESET_COLORS[0].value);
+  const [color, setColor] = useState(PRESET_COLORS[3].value);
   const [icon, setIcon] = useState<string | undefined>(undefined);
   
   const [dailyNote, setDailyNote] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [showSavedFeedback, setShowSavedFeedback] = useState(false);
+  
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,7 +78,7 @@ const EventModal: React.FC<EventModalProps> = ({
         setEndTime(initialEvent.endTime || '13:00');
         setDescription(initialEvent.description || '');
         setIsImportant(initialEvent.isImportant);
-        setColor(initialEvent.color || PRESET_COLORS[0].value);
+        setColor(initialEvent.color || PRESET_COLORS[3].value);
         setIcon(initialEvent.icon);
       } else {
         setTitle('');
@@ -86,7 +86,7 @@ const EventModal: React.FC<EventModalProps> = ({
         setEndTime('13:00');
         setDescription('');
         setIsImportant(false);
-        setColor(PRESET_COLORS[0].value);
+        setColor(PRESET_COLORS[3].value);
         setIcon(undefined);
       }
     }
@@ -124,12 +124,14 @@ const EventModal: React.FC<EventModalProps> = ({
     setTimeout(() => setShowSavedFeedback(false), 2000);
   };
 
+  const isCustomColor = !PRESET_COLORS.some(c => c.value === color);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5 dark:bg-black/60 backdrop-blur-md transition-all">
       <div className="bg-white dark:bg-stone-900 rounded-[2.5rem] p-8 w-full max-w-2xl shadow-2xl border border-stone-100 dark:border-stone-800 fade-in max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-1">Opened Date</span>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold block mb-1">Opened Date</span>
             <h2 className="text-2xl font-serif text-stone-700 dark:text-stone-100 italic">
               {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </h2>
@@ -246,17 +248,43 @@ const EventModal: React.FC<EventModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 mb-3 font-bold">Color Theme</label>
+              <div className="flex justify-between items-center mb-3">
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Color Palette</label>
+                {isCustomColor && (
+                   <span className="text-[8px] uppercase tracking-widest text-[#F5AFAF] font-bold">Custom Active</span>
+                )}
+              </div>
               <div className="grid grid-cols-4 gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
                     key={c.value}
                     type="button"
                     onClick={() => setColor(c.value)}
-                    className={`h-8 rounded-lg transition-all ${color === c.value ? 'ring-2 ring-[#F5AFAF] scale-110 shadow-lg' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
+                    className={`h-8 rounded-lg transition-all ${color === c.value ? 'ring-2 ring-stone-800 dark:ring-white scale-110 shadow-lg z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
                     style={{ backgroundColor: c.value }}
                   />
                 ))}
+                <button
+                  type="button"
+                  onClick={() => colorInputRef.current?.click()}
+                  className={`h-8 rounded-lg transition-all border-2 border-dashed border-stone-200 dark:border-stone-700 flex items-center justify-center group overflow-hidden relative
+                    ${isCustomColor ? 'ring-2 ring-stone-800 dark:ring-white scale-110 shadow-lg z-10' : 'opacity-60 hover:opacity-100 hover:scale-105'}`}
+                >
+                  <div 
+                    className="absolute inset-0 transition-opacity" 
+                    style={{ backgroundColor: isCustomColor ? color : 'transparent', opacity: isCustomColor ? 1 : 0 }} 
+                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 relative z-10 ${isCustomColor ? 'text-white mix-blend-difference' : 'text-stone-300 dark:text-stone-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <input 
+                    ref={colorInputRef}
+                    type="color" 
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </button>
               </div>
             </div>
 

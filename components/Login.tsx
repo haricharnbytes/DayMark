@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { performCloudRestore } from '../utils/db';
 
 interface LoginProps {
   onLogin: () => void;
@@ -10,21 +11,35 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [statusText, setStatusText] = useState('Enter Workspace');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
+    setStatusText('Unlocking...');
     
-    // Aesthetic delay for "Unlocking" feel
-    setTimeout(() => {
-      if (username === 'charan' && password === 'daymark') {
+    // Simulate auth check
+    if (username === 'charan' && password === 'daymark') {
+      try {
+        setStatusText('Pulling Cloud Data...');
+        await performCloudRestore(username);
+        
         localStorage.setItem('daymark_auth', 'true');
-        onLogin();
-      } else {
+        setStatusText('Welcome Back');
+        setTimeout(onLogin, 500);
+      } catch (err) {
+        console.error('Login Restore failed', err);
+        setError('Connection failed. Try again.');
+        setIsLoggingIn(false);
+        setStatusText('Enter Workspace');
+      }
+    } else {
+      setTimeout(() => {
         setError('Invalid credentials');
         setIsLoggingIn(false);
-      }
-    }, 800);
+        setStatusText('Enter Workspace');
+      }, 800);
+    }
   };
 
   return (
@@ -44,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <h1 className="text-4xl md:text-5xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.4em] uppercase mb-4">
             DayMark
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 dark:text-stone-600 font-bold">Private Access Only</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 dark:text-stone-600 font-bold">Cloud-Enabled Workspace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white dark:bg-stone-900/40 backdrop-blur-xl p-10 rounded-[3rem] border border-stone-200 dark:border-stone-800 shadow-2xl space-y-8">
@@ -89,13 +104,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 : 'bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 hover:scale-[1.02] active:scale-[0.98] shadow-[#F5AFAF]/10'
               }`}
           >
-            {isLoggingIn ? 'Unlocking...' : 'Enter Workspace'}
+            {statusText}
           </button>
         </form>
         
         <div className="mt-12 text-center">
            <div className="h-px w-12 bg-stone-200 dark:bg-stone-800 mx-auto mb-6"></div>
-           <p className="text-[10px] uppercase tracking-[0.5em] text-stone-400 dark:text-stone-700">Mindful Tracking &bull; {new Date().getFullYear()}</p>
+           <p className="text-[10px] uppercase tracking-[0.5em] text-stone-400 dark:text-stone-700">Universal Access Enabled &bull; {new Date().getFullYear()}</p>
         </div>
       </div>
     </div>
