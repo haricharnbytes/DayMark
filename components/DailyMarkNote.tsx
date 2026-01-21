@@ -105,14 +105,14 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
     return (
       <div className="w-full max-w-sm h-full fade-in">
         <div className={`bg-white dark:bg-stone-900 rounded-[2rem] p-6 border border-stone-100 dark:border-stone-800 shadow-xl flex flex-col items-center justify-center text-center gap-4 h-full transition-all duration-500 relative overflow-hidden ${isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0 success-flourish'}`}>
-          <div className="w-16 h-16 bg-[#F5AFAF]/10 dark:bg-[#F5AFAF]/5 rounded-2xl flex items-center justify-center shadow-md shadow-[#F5AFAF]/5">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#F5AFAF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-16 h-16 bg-[#a31621]/10 dark:bg-[#a31621]/5 rounded-2xl flex items-center justify-center shadow-md shadow-[#a31621]/5">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#a31621]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div>
-            <span className="text-[7px] uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-1">Mark Complete</span>
-            <h2 className="text-lg font-serif text-stone-800 dark:text-stone-100 italic">Preserved</h2>
+            <span className="text-[7px] uppercase tracking-[0.3em] text-[#a31621] font-bold block mb-1">Mark Complete</span>
+            <h2 className="text-lg font-serif text-stone-800 dark:text-stone-100 italic">journaled</h2>
             <p className="mt-2 text-stone-400 dark:text-stone-500 text-[9px] leading-relaxed max-w-[180px] mx-auto italic truncate">
                {content}
             </p>
@@ -120,7 +120,7 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
           
           <button 
             onClick={() => setShowEditor(true)}
-            className="mt-2 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.1em] text-stone-400 hover:text-[#F5AFAF] transition-all py-2.5 px-6 border border-stone-100 dark:border-stone-800 rounded-full hover:bg-[#F5AFAF]/5 font-bold"
+            className="mt-2 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.1em] text-stone-400 hover:text-[#a31621] transition-all py-2.5 px-6 border border-stone-100 dark:border-stone-800 rounded-full hover:bg-[#a31621]/5 font-bold"
           >
             Review Entry
           </button>
@@ -139,7 +139,7 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
             <h2 className="text-xs font-serif text-stone-800 dark:text-stone-200 italic">
               Daily Mark
             </h2>
-            <div className={`w-1 h-1 rounded-full ${isSaving ? 'bg-[#F5AFAF] animate-pulse' : 'bg-green-500'}`} />
+            <div className={`w-1 h-1 rounded-full ${isSaving ? 'bg-[#a31621] animate-pulse' : 'bg-green-500'}`} />
           </div>
           
           <span className="text-[7px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-600 font-bold whitespace-nowrap">
@@ -147,22 +147,14 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
           </span>
         </div>
 
-        {/* Content Area */}
-        <div className="relative flex flex-1 overflow-hidden">
-          <div className="w-6 border-r border-stone-50 dark:border-stone-800 flex flex-col items-center py-6 gap-3 opacity-20 select-none">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="w-0.5 h-0.5 rounded-full bg-stone-300 dark:bg-stone-700" />
-            ))}
-          </div>
-          
-          <div className="flex-1 relative p-6">
-            <textarea
-              value={content}
-              onChange={handleChange}
-              placeholder="Record a thought..."
-              className="w-full h-full bg-transparent border-none focus:ring-0 text-stone-700 dark:text-stone-300 font-serif text-base leading-relaxed resize-none placeholder:text-stone-200 dark:placeholder:text-stone-800 placeholder:italic p-0"
-            />
-          </div>
+        {/* Content Area - Seamless Design */}
+        <div className="relative flex-1 p-6 md:p-8 flex flex-col">
+          <textarea
+            value={content}
+            onChange={handleChange}
+            placeholder="Record a thought..."
+            className="w-full flex-1 bg-transparent border-none focus:ring-0 focus:outline-none focus:border-none focus:shadow-none text-stone-700 dark:text-stone-300 font-serif text-base leading-relaxed resize-none placeholder:text-stone-200 dark:placeholder:text-stone-800 placeholder:italic p-0 caret-[#a31621] shadow-none outline-none appearance-none"
+          />
         </div>
 
         {/* Footer Toolbar */}
@@ -187,13 +179,13 @@ const DailyMarkNote: React.FC<DailyMarkNoteProps> = ({ date, onNoteSaved }) => {
               disabled={!content.trim() || isSaving}
               className={`group flex items-center gap-1.5 px-4 py-2 rounded-xl text-[8px] uppercase tracking-[0.1em] font-bold transition-all duration-300
                 ${content.trim() 
-                    ? 'bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 shadow-md hover:scale-105' 
+                    ? 'bg-stone-800 dark:bg-[#a31621] text-white dark:text-stone-900 shadow-md hover:scale-105' 
                     : 'bg-stone-50 dark:bg-stone-800 text-stone-300 dark:text-stone-700 cursor-not-allowed opacity-50 shadow-none'
                 }`}
             >
-              <span>Seal</span>
+              <span>Mark</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
             </button>
           </div>

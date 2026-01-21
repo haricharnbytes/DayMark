@@ -51,10 +51,10 @@ const IndividualCountdown: React.FC<IndividualCountdownProps> = ({ targetEvent }
   if (status === 'active') return (
     <div className="flex items-center gap-2">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5AFAF] opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F5AFAF]"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#a31621] opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#a31621]"></span>
       </span>
-      <span className="text-[10px] uppercase tracking-widest text-[#F5AFAF] font-bold animate-pulse">Moment In Progress</span>
+      <span className="text-[10px] uppercase tracking-widest text-[#a31621] font-bold animate-pulse">Moment In Progress</span>
     </div>
   );
 
@@ -77,7 +77,7 @@ const IndividualCountdown: React.FC<IndividualCountdownProps> = ({ targetEvent }
         <span className="text-[7px] uppercase tracking-widest text-stone-400 font-bold">M</span>
       </div>
       <div className="flex flex-col items-center">
-        <span className="text-xl font-bold text-[#F5AFAF] tabular-nums">{format(timeLeft.seconds)}</span>
+        <span className="text-xl font-bold text-[#a31621] tabular-nums">{format(timeLeft.seconds)}</span>
         <span className="text-[7px] uppercase tracking-widest text-stone-400 font-bold">S</span>
       </div>
     </div>
@@ -98,12 +98,12 @@ const UpcomingEventsOverlay: React.FC<UpcomingEventsOverlayProps> = ({ isOpen, o
       <div className="bg-white dark:bg-stone-900 rounded-[3rem] p-10 w-full max-w-2xl shadow-2xl border border-stone-100 dark:border-stone-800 fade-in flex flex-col max-h-[85vh]">
         <div className="flex justify-between items-center mb-10">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold block mb-1">Queue</span>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#a31621] font-bold block mb-1">Queue</span>
             <h2 className="text-3xl font-bold text-stone-800 dark:text-stone-100 uppercase tracking-[0.1em]">Upcoming Moments</h2>
           </div>
           <button 
             onClick={onClose}
-            className="text-stone-300 dark:text-stone-600 hover:text-[#F5AFAF] transition-all p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl"
+            className="text-stone-300 dark:text-stone-600 hover:text-[#a31621] transition-all p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -121,12 +121,12 @@ const UpcomingEventsOverlay: React.FC<UpcomingEventsOverlayProps> = ({ isOpen, o
             upcomingEvents.map((event, idx) => (
               <div 
                 key={event.id} 
-                className="group bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800 transition-all hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#F5AFAF]/5 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                className="group bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800 transition-all hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#a31621]/5 flex flex-col md:flex-row md:items-center justify-between gap-6"
                 style={{ animationDelay: `${idx * 0.1}s` }}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color || '#F5AFAF' }} />
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: event.color || '#a31621' }} />
                     <span className="text-[10px] uppercase tracking-widest text-stone-400 font-bold">
                       {new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>

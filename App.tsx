@@ -28,22 +28,34 @@ type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
 
 const MonthIcon: React.FC<{ month: number }> = ({ month }) => {
   const icons = [
-    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />,
+    // Jan - Star
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />,
+    // Feb - Heart
     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
-    <path d="M12 20V10m0 0a5 5 0 015-5m-5 5a5 5 0 00-5-5m5 15c-3 0-5.5-2.5-5.5-5.5S9 9 12 9s5.5 2.5 5.5 5.5-2.5 5.5-5.5 5.5z" />,
-    <path d="M20 17.58A5 5 0 0018 8h-1.26A8 8 0 104 16.25M8 16v4m4-2v4m4-2v4" />,
-    <path d="M12 12m-3 0a3 3 0 106 0a3 3 0 10-6 0M12 7V3m0 18v-4M7 12H3m18 0h-4m-1.5-5.5l3-3m-15 15l3-3m0-15l3 3m9 9l3 3" />,
+    // Mar - Leaf
+    <path d="M11 20A7 7 0 014.05 13a2.98 2.98 0 000-2.01A7 7 0 0111 4h1a7 7 0 017 7 2.99 2.99 0 000 2.01A7 7 0 0112 20h-1z M12 4v16" />,
+    // Apr - Flower
+    <path d="M12 12m-3 0a3 3 0 106 0a3 3 0 10-6 0 M12 7c-1-4-7-4-8 0s4 7 8 8c4-1 8-4 8-8s-7-4-8 0 M12 17c1 4 7 4 8 0s-4-7-8-8c-4 1-8 4-8 8s7 4 8 0" />,
+    // May - Sun
     <path d="M12 12m-4 0a4 4 0 108 0a4 4 0 10-8 0M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />,
-    <path d="M2 6c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2s2.5-2 5-2c1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2s2.5-2 5-2c1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2s2.5-2 5-2c1.3 0 1.9.5 2.5 1" />,
-    <path d="M21 21H3L12 3l9 18zM12 13l-3 3M12 13l3 3" />,
-    <path d="M20.39 3.11a2.39 2.39 0 00-3.38 0L3.11 17a2.39 2.39 0 000 3.39 2.39 2.39 0 003.38 0L20.39 6.5a2.39 2.39 0 000-3.39zM11.5 12.5l3-3" />,
-    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />,
-    <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" />,
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    // Jun - Sunglasses
+    <path d="M2 10h5a3 3 0 013 3v1a3 3 0 01-3 3H5a3 3 0 01-3-3v-1a3 3 0 013-3z M14 10h5a3 3 0 013 3v1a3 3 0 01-3 3h-2a3 3 0 01-3-3v-1a3 3 0 013-3z M10 13h4" />,
+    // Jul - Sparkle
+    <path d="M12 3l1.912 5.885L20 10.8l-5.088 1.915L12 18.6l-2.912-5.885L4 10.8l5.088-1.915z M5 3l1 1 M19 3l-1 1 M5 19l1-1 M19 19l-1-1" />,
+    // Aug - Bolt
+    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
+    // Sep - Book
+    <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 01-2.5-2.5V4.5z" />,
+    // Oct - Pumpkin
+    <path d="M12 22c-4 0-7-3-7-7s2-8 6-8 2-2 3-2 1 2 1 2 4 1 4 8-3 7-7 7z M12 10v4" />,
+    // Nov - Maple Leaf
+    <path d="M12 22v-3.5 M12 18.5l2-2.5 3.5.5-1.5-3.5 3-2.5-4-1-1-4-1 4-4 1 3 2.5-1.5 3.5 3.5-.5z" />,
+    // Dec - Snowflake
+    <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
   ];
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#F5AFAF] group-hover/month:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#a31621] group-hover/month:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       {icons[month]}
     </svg>
   );
@@ -93,7 +105,7 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayEvents = events.filter(e => e.date === dateStr);
           const hasEvents = dayEvents.length > 0;
-          const primaryEventColor = hasEvents ? (dayEvents[0].color || '#F5AFAF') : '#F5AFAF';
+          const primaryEventColor = hasEvents ? (dayEvents[0].color || '#a31621') : '#a31621';
           const hasNote = noteDates.includes(dateStr);
           const today = isToday(year, month, d);
           const active = activeDateStr === dateStr;
@@ -107,16 +119,16 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
                 className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-md md:rounded-lg overflow-hidden
                   ${isClicked ? 'date-pulse z-20' : ''}
                   ${isJustSaved ? 'success-flourish z-20' : ''}
-                  ${active ? 'ring-1 md:ring-1.5 ring-[#F5AFAF]/60 shadow-lg shadow-[#F5AFAF]/5 z-10' : ''}
+                  ${active ? 'ring-1 md:ring-1.5 ring-[#a31621]/60 shadow-lg shadow-[#a31621]/5 z-10' : ''}
                   ${today 
-                    ? 'bg-[#F5AFAF] text-white shadow-xl shadow-[#F5AFAF]/30 z-10' 
+                    ? 'bg-[#a31621] text-white shadow-xl shadow-[#a31621]/30 z-10' 
                     : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
                   }`}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
+                <div className={`absolute inset-0 bg-gradient-to-br from-[#a31621]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
                 
                 {hasNote && !today && (
-                  <div className={`absolute ${large ? 'top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5' : 'top-0.5 right-0.5 w-0.5 h-0.5 md:w-0.5 md:h-0.5'} rounded-full bg-[#F5AFAF]/60 animate-pulse`} />
+                  <div className={`absolute ${large ? 'top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5' : 'top-0.5 right-0.5 w-0.5 h-0.5 md:w-0.5 md:h-0.5'} rounded-full bg-[#a31621]/60 animate-pulse`} />
                 )}
 
                 <span className={`relative z-10 ${large ? 'text-base md:text-xl' : 'text-[10px] md:text-[12px]'} font-bold`}>
@@ -170,16 +182,16 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
         const today = isToday(date.getFullYear(), date.getMonth(), date.getDate());
 
         return (
-          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-white dark:bg-stone-900/40 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col gap-3 md:gap-4 min-h-[200px] md:min-h-[400px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#F5AFAF]/30' : ''}`}>
+          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-white dark:bg-stone-900/40 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col gap-3 md:gap-4 min-h-[200px] md:min-h-[400px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#a31621]/30' : ''}`}>
             <div className="flex flex-col">
               <span className="text-[10px] md:text-[11px] uppercase tracking-widest text-stone-400 dark:text-stone-500 font-bold mb-1 md:mb-2">
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </span>
               <div className="flex items-center gap-2">
-                <span className={`text-3xl md:text-5xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
+                <span className={`text-3xl md:text-5xl font-bold ${today ? 'text-[#a31621]' : 'text-stone-700 dark:text-stone-200'}`}>
                   {date.getDate()}
                 </span>
-                {hasNote && <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#F5AFAF] mt-1 md:mt-2" title="Journal Mark" />}
+                {hasNote && <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#a31621] mt-1 md:mt-2" title="Journal Mark" />}
               </div>
             </div>
             <div className="flex flex-col gap-1.5 md:gap-2 flex-1 mt-2 md:mt-4">
@@ -190,7 +202,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
                   className={`text-[10px] md:text-[12px] p-2 md:p-4 rounded-lg md:rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0 border border-black/5 dark:border-white/10" style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0 border border-black/5 dark:border-white/10" style={{ backgroundColor: e.color || '#a31621' }} />
                     <span className="font-bold truncate">{e.title}</span>
                   </div>
                 </div>
@@ -239,14 +251,14 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
           <h2 className="text-3xl md:text-7xl font-bold text-stone-800 dark:text-stone-100">
             {new Date(dStr + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' })}
           </h2>
-          {hasNote && <p className="text-[#F5AFAF] text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold mt-2 md:mt-4">Marked Day</p>}
+          {hasNote && <p className="text-[#a31621] text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold mt-2 md:mt-4">Marked Day</p>}
         </div>
-        {today && <span className="w-fit bg-[#F5AFAF] text-white px-6 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold shadow-xl shadow-[#F5AFAF]/20">Today</span>}
+        {today && <span className="w-fit bg-[#a31621] text-white px-6 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold shadow-xl shadow-[#a31621]/20">Today</span>}
       </div>
 
       {noteContent && (
         <div className="mb-10 md:mb-16 p-6 md:p-10 bg-stone-50 dark:bg-stone-800/50 rounded-[1.5rem] md:rounded-[2.5rem] border border-stone-100 dark:border-stone-800">
-          <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-4 md:mb-6">Reflection</span>
+          <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-[#a31621] font-bold block mb-4 md:mb-6">Reflection</span>
           <p className="font-serif italic text-stone-600 dark:text-stone-300 text-xl md:text-2xl leading-relaxed">
             {noteContent}
           </p>
@@ -257,7 +269,7 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
         <div className="flex justify-between items-center mb-6 md:mb-8">
           <h3 className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-stone-400 dark:text-stone-500 font-bold">Recorded Moments</h3>
           <button 
-            className="text-[10px] md:text-xs uppercase tracking-widest text-[#F5AFAF] font-bold bg-[#F5AFAF]/10 px-4 md:px-6 py-2 rounded-full hover:bg-[#F5AFAF]/20 transition-all"
+            className="text-[10px] md:text-xs uppercase tracking-widest text-[#a31621] font-bold bg-[#a31621]/10 px-4 md:px-6 py-2 rounded-full hover:bg-[#a31621]/20 transition-all"
             onClick={(e) => { e.stopPropagation(); onDateClick(day, month); }}
           >
             Add New
@@ -273,11 +285,11 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
               <div className="flex-1 pb-6 md:pb-10 border-b border-stone-100 dark:border-stone-800 last:border-0">
                 <div className="flex items-center justify-between mb-2 md:mb-4">
                   <div className="flex items-center gap-3 md:gap-4">
-                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-transform duration-500 group-hover:scale-125 border border-black/5 dark:border-white/10 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-transform duration-500 group-hover:scale-125 border border-black/5 dark:border-white/10 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#a31621' }} />
                     <h4 className={`text-xl md:text-3xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
                   </div>
                   {status === 'active' && (
-                    <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] bg-[#F5AFAF]/10 text-[#F5AFAF] px-3 md:px-4 py-1 md:py-1.5 rounded-full font-bold animate-pulse">Live</span>
+                    <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] bg-[#a31621]/10 text-[#a31621] px-3 md:px-4 py-1 md:py-1.5 rounded-full font-bold animate-pulse">Live</span>
                   )}
                 </div>
                 <p className={`text-base md:text-lg leading-relaxed italic truncate transition-opacity duration-500 ${status === 'passed' ? 'text-stone-300 dark:text-stone-700' : 'text-stone-500 dark:text-stone-400'}`}>
@@ -484,8 +496,8 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-8">
-          <div className="w-16 h-16 border-t-2 border-[#F5AFAF] rounded-full animate-spin"></div>
-          <div className="text-[#F5AFAF] tracking-[0.5em] uppercase text-xs font-bold animate-pulse">Entering DayMark</div>
+          <div className="w-16 h-16 border-t-2 border-[#a31621] rounded-full animate-spin"></div>
+          <div className="text-[#a31621] tracking-[0.5em] uppercase text-xs font-bold animate-pulse">Entering DayMark</div>
         </div>
       </div>
     );
@@ -496,11 +508,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-stone-800 dark:text-stone-200 px-4 md:px-12 py-8 md:py-20 w-full selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
+    <div className="min-h-screen bg-white dark:bg-black text-stone-800 dark:text-stone-200 px-4 md:px-12 py-8 md:py-20 w-full selection:bg-[#a31621]/20 overflow-x-hidden transition-colors duration-700">
       
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.05] overflow-hidden -z-10">
-        <svg className="absolute -top-32 -right-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
-        <svg className="absolute -bottom-32 -left-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>
+        <svg className="absolute -top-32 -right-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#a31621]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
+        <svg className="absolute -bottom-32 -left-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#a31621]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>
       </div>
 
       <header className="mb-10 md:mb-20 text-center fade-in relative min-h-[140px] md:min-h-[80px]">
@@ -508,13 +520,13 @@ const App: React.FC = () => {
         <div className="flex flex-wrap justify-center md:absolute md:top-0 md:left-0 gap-2 md:gap-4 mb-4 md:mb-0">
            <button 
              onClick={() => setShowSyncOverlay(true)}
-             className={`flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#F5AFAF]/20' : ''}`}
+             className={`flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#a31621] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#a31621]/20' : ''}`}
              aria-label="Cloud Status"
            >
              <span className="text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">
                {syncStatus === 'syncing' ? 'Syncing' : syncStatus === 'synced' ? 'Ready' : 'Everywhere'}
              </span>
-             <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 md:h-5 md:w-5 ${syncStatus === 'syncing' ? 'animate-spin text-[#F5AFAF]' : ''} ${syncStatus === 'error' ? 'text-red-400' : ''} ${syncStatus === 'synced' ? 'text-green-500' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 md:h-5 md:w-5 ${syncStatus === 'syncing' ? 'animate-spin text-[#a31621]' : ''} ${syncStatus === 'error' ? 'text-red-400' : ''} ${syncStatus === 'synced' ? 'text-green-500' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                {syncStatus === 'synced' ? (
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                ) : (
@@ -525,11 +537,11 @@ const App: React.FC = () => {
 
            <button 
              onClick={() => setShowEventsOverlay(true)}
-             className="flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group"
+             className="flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#a31621] transition-all hover:scale-105 active:scale-95 shadow-sm group"
              aria-label="Toggle Events Overlay"
            >
              <span className="text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">Moments</span>
-             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 md:h-7 min-w-[24px] md:min-w-[28px] px-1.5 md:px-2 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
+             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 md:h-7 min-w-[24px] md:min-w-[28px] px-1.5 md:px-2 transition-colors group-hover:bg-[#a31621]/10 group-hover:text-[#a31621]">
                 <span className="text-[10px] md:text-xs font-bold">{events.length}</span>
              </div>
            </button>
@@ -539,7 +551,7 @@ const App: React.FC = () => {
         <div className="flex flex-wrap justify-center md:absolute md:top-0 md:right-0 gap-2 md:gap-4 mb-8 md:mb-0">
            <button 
              onClick={() => setIsDarkMode(!isDarkMode)}
-             className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
+             className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#a31621] transition-all hover:scale-110 active:scale-95 shadow-sm"
              aria-label="Toggle Theme"
            >
              {isDarkMode ? (
@@ -564,15 +576,15 @@ const App: React.FC = () => {
            </button>
         </div>
 
-        <div className="inline-flex items-center justify-center p-4 md:p-6 bg-[#F5AFAF]/10 rounded-full mb-6 md:mb-10">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-[#F5AFAF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="inline-flex items-center justify-center p-4 md:p-6 bg-[#a31621]/10 rounded-full mb-6 md:mb-10">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-[#a31621]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
           </svg>
         </div>
         <h1 className="text-4xl md:text-8xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.3em] md:tracking-[0.4em] uppercase mb-4 md:mb-8">
           DayMark
         </h1>
-        <div className="h-0.5 w-16 md:w-32 bg-[#F5AFAF]/20 mx-auto mb-10 md:mb-16"></div>
+        <div className="h-0.5 w-16 md:w-32 bg-[#a31621]/20 mx-auto mb-10 md:mb-16"></div>
         
         <Countdown upcomingEvents={upcomingEvents} />
       </header>
@@ -585,7 +597,7 @@ const App: React.FC = () => {
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`flex-1 px-2 md:px-4 py-2 md:py-3 rounded-full text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#F5AFAF] text-white shadow-xl' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/50'}`}
+              className={`flex-1 px-2 md:px-4 py-2 md:py-3 rounded-full text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#a31621] text-white shadow-xl' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/50'}`}
             >
               {mode}
             </button>
@@ -595,7 +607,7 @@ const App: React.FC = () => {
         {/* Navigation Strip */}
         <div className="flex items-center justify-between w-full gap-2 md:gap-8">
           <button onClick={() => navigate(-1)} className="group flex items-center gap-2 md:gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all shrink-0">
-            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
+            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#a31621]/10 transition-colors border border-transparent group-hover:border-[#a31621]/10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </div>
             <span className="text-[10px] uppercase tracking-[0.2em] font-bold hidden xl:inline">Previous</span>
@@ -607,7 +619,7 @@ const App: React.FC = () => {
             </h2>
             <button 
               onClick={jumpToToday}
-              className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#F5AFAF] hover:text-[#a53860] dark:hover:text-white transition-colors font-bold py-1"
+              className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#a31621] hover:text-[#a53860] dark:hover:text-white transition-colors font-bold py-1"
             >
               Back to Today
             </button>
@@ -615,7 +627,7 @@ const App: React.FC = () => {
 
           <button onClick={() => navigate(1)} className="group flex items-center gap-2 md:gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all text-right shrink-0">
             <span className="text-[10px] uppercase tracking-[0.2em] font-bold hidden xl:inline">Next</span>
-            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
+            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#a31621]/10 transition-colors border border-transparent group-hover:border-[#a31621]/10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </div>
           </button>
@@ -696,13 +708,12 @@ const App: React.FC = () => {
       <footer className="mt-16 md:mt-32 text-center text-stone-400 dark:text-stone-700 text-[9px] md:text-[11px] uppercase tracking-[0.4em] md:tracking-[0.6em] pb-16 md:pb-32 flex flex-col items-center gap-6 md:gap-8">
         <div className="h-px w-12 md:w-20 bg-stone-200 dark:bg-stone-800"></div>
         <div className="flex flex-col gap-3 md:gap-4">
-          <span className="italic capitalize text-stone-500 text-base md:text-lg">Mindful Tracking &bull; DayMark &bull; {new Date().getFullYear()}</span>
-          <button 
-            onClick={handleLogout}
-            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-stone-500 hover:text-[#F5AFAF] transition-colors"
-          >
-            Lock Workspace
-          </button>
+          <span className="italic capitalize text-stone-500 text-base md:text-lg">Mindful Tracking &bull; DayMark </span>
+          
+          <div className="flex flex-col gap-2">
+             <span className="text-[10px] tracking-[0.2em] font-bold text-stone-500">Hari Charan Katta &bull; {new Date().getFullYear()}</span>
+             <a href="https://github.com/haricharnbytes/DayMark" target="_blank" rel="noopener noreferrer" className="text-[10px] tracking-[0.2em] font-bold text-[#a31621] hover:underline transition-all">GitHub</a>
+          </div>
         </div>
       </footer>
 

@@ -10,7 +10,7 @@ interface TimerConfig {
 }
 
 const CONFIGS: TimerConfig[] = [
-  { label: 'Focus', minutes: 25, color: '#F5AFAF' },
+  { label: 'Focus', minutes: 25, color: '#a31621' },
   { label: 'Flow', minutes: 50, color: '#d9a58e' },
   { label: 'Rest', minutes: 5, color: '#b9c9b7' },
   { label: 'Deep Rest', minutes: 15, color: '#6594B1' },
@@ -33,29 +33,53 @@ const PomodoroTimer: React.FC = () => {
     return { label: 'Custom', minutes: customMinutes, color: '#A8A29E' };
   }, [mode, customMinutes]);
 
+  const requestNotificationPermission = useCallback(async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }, []);
+
+  const sendNotification = useCallback(() => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('DayMark Timer', {
+        body: 'Time is up buddy get back to work!',
+        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23a31621" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Ccircle cx="12" cy="12" r="10"%3E%3C/circle%3E%3Cpolyline points="12 6 12 12 16 14"%3E%3C/polyline%3E%3C/svg%3E',
+      });
+    }
+  }, []);
+
   const playAlarm = useCallback(() => {
     try {
       if (!audioCtxRef.current) {
         audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
       const ctx = audioCtxRef.current;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      
+      const playBeep = (time: number, frequency: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.5); // E5
-      osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 1.0); // G5
+        // Use a triangle wave for a softer but still piercing sound
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(frequency, time);
+        
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.3, time + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
 
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.0);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+        osc.start(time);
+        osc.stop(time + 0.4);
+      };
 
-      osc.start();
-      osc.stop(ctx.currentTime + 2.5);
+      // Create an alertive triple-beep sequence
+      const now = ctx.currentTime;
+      playBeep(now, 880); // A5
+      playBeep(now + 0.5, 880);
+      playBeep(now + 1.0, 1109); // C#6 (Major third higher, more urgent)
+      
     } catch (e) {
       console.warn('Audio feedback failed', e);
     }
@@ -94,13 +118,14 @@ const PomodoroTimer: React.FC = () => {
     } else if (timeLeft === 0 && isActive) {
       setIsActive(false);
       playAlarm();
+      sendNotification();
       if (timerRef.current) clearInterval(timerRef.current);
     }
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isActive, timeLeft, playAlarm]);
+  }, [isActive, timeLeft, playAlarm, sendNotification]);
 
   useEffect(() => {
     const currentConfig = getCurrentConfig();
@@ -109,6 +134,9 @@ const PomodoroTimer: React.FC = () => {
   }, [timeLeft, getCurrentConfig]);
 
   const toggleTimer = () => {
+    if (!isActive) {
+      requestNotificationPermission();
+    }
     setIsActive(!isActive);
     setIsEditingCustom(false);
   };
@@ -131,7 +159,7 @@ const PomodoroTimer: React.FC = () => {
             <h2 className="text-xs font-serif text-stone-800 dark:text-stone-200 italic">
               Mindful Interval
             </h2>
-            <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-[#F5AFAF] animate-pulse' : 'bg-stone-300 dark:bg-stone-700'}`} />
+            <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-[#a31621] animate-pulse' : 'bg-stone-300 dark:bg-stone-700'}`} />
           </div>
           
           <span className="text-[7px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-600 font-bold whitespace-nowrap">
@@ -226,7 +254,7 @@ const PomodoroTimer: React.FC = () => {
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 shadow-lg
                 ${isActive 
                   ? 'bg-stone-100 dark:bg-stone-800 text-stone-400' 
-                  : 'bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 scale-105 shadow-[#F5AFAF]/10'
+                  : 'bg-stone-800 dark:bg-[#a31621] text-white dark:text-stone-900 scale-105 shadow-[#a31621]/10'
                 }`}
             >
               {isActive ? (
@@ -253,7 +281,7 @@ const PomodoroTimer: React.FC = () => {
             {mode === 'Custom' && !isActive && (
                <button
                onClick={() => setIsEditingCustom(!isEditingCustom)}
-               className={`p-2.5 rounded-full transition-colors ${isEditingCustom ? 'text-[#F5AFAF]' : 'text-stone-300 dark:text-stone-700 hover:text-stone-500'}`}
+               className={`p-2.5 rounded-full transition-colors ${isEditingCustom ? 'text-[#a31621]' : 'text-stone-300 dark:text-stone-700 hover:text-stone-500'}`}
              >
                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

@@ -73,15 +73,15 @@ const Countdown: React.FC<CountdownProps> = ({ upcomingEvents }) => {
   return (
     <div className="flex flex-col items-center fade-in">
       <div className="flex items-center gap-3 mb-3">
-        <div className="h-px w-3 bg-[#F5AFAF]/20"></div>
-        <div className="flex items-center gap-1.5 text-[#F5AFAF] text-[8px] tracking-[0.3em] uppercase font-bold">
+        <div className="h-px w-3 bg-[#a31621]/20"></div>
+        <div className="flex items-center gap-1.5 text-[#a31621] text-[8px] tracking-[0.3em] uppercase font-bold">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F5AFAF] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#F5AFAF]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#a31621] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#a31621]"></span>
           </span>
           Up Next
         </div>
-        <div className="h-px w-3 bg-[#F5AFAF]/20"></div>
+        <div className="h-px w-3 bg-[#a31621]/20"></div>
       </div>
       
       <div className="flex flex-col gap-4 w-full max-w-xl">

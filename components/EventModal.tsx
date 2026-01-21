@@ -17,14 +17,14 @@ const PRESET_COLORS = [
   { name: 'Sage', value: '#b9c9b7' },
   { name: 'Terracotta', value: '#d9a58e' },
   { name: 'Dusk', value: '#6594B1' },
-  { name: 'Blossom', value: '#F5AFAF' },
+  { name: 'Crimson', value: '#a31621' },
   { name: 'Lavender', value: '#c3b9d9' },
   { name: 'Sky', value: '#b7c9d9' },
   { name: 'Sand', value: '#e6d2b5' },
 ];
 
 export const ICON_MAP: Record<string, React.ReactNode> = {
-  'work': <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />,
+  'work': <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 7V5a2 2 0 00-2 2v2" />,
   'social': <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
   'wellness': <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
   'travel': <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />,
@@ -131,7 +131,7 @@ const EventModal: React.FC<EventModalProps> = ({
       <div className="bg-white dark:bg-stone-900 rounded-[2.5rem] p-8 w-full max-w-2xl shadow-2xl border border-stone-100 dark:border-stone-800 fade-in max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold block mb-1">Opened Date</span>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#a31621] font-bold block mb-1">Opened Date</span>
             <h2 className="text-2xl font-serif text-stone-700 dark:text-stone-100 italic">
               {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </h2>
@@ -139,7 +139,7 @@ const EventModal: React.FC<EventModalProps> = ({
           <button 
             type="button"
             onClick={onClose}
-            className="text-stone-300 dark:text-stone-600 hover:text-[#F5AFAF] transition-all p-2 bg-stone-50 dark:bg-stone-800 rounded-full"
+            className="text-stone-300 dark:text-stone-600 hover:text-[#a31621] transition-all p-2 bg-stone-50 dark:bg-stone-800 rounded-full"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -149,11 +149,12 @@ const EventModal: React.FC<EventModalProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="space-y-6">
-            <div className="bg-stone-50 dark:bg-stone-800/50 p-6 rounded-3xl border border-stone-100 dark:border-stone-800 transition-all duration-500">
+            {/* Seamless Daily Mark Editor */}
+            <div className="bg-transparent p-0 rounded-none border-none transition-all duration-500">
               <div className="flex justify-between items-center mb-4">
                 <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Daily Mark</label>
                 {(isSavingNote || showSavedFeedback) && (
-                  <span className={`text-[8px] uppercase tracking-widest font-bold transition-all duration-300 ${showSavedFeedback ? 'text-green-500' : 'text-[#F5AFAF] animate-pulse'}`}>
+                  <span className={`text-[8px] uppercase tracking-widest font-bold transition-all duration-300 ${showSavedFeedback ? 'text-green-500' : 'text-[#a31621] animate-pulse'}`}>
                     {showSavedFeedback ? 'Saved' : 'Syncing...'}
                   </span>
                 )}
@@ -166,7 +167,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 }}
                 onBlur={handleNoteSave}
                 placeholder="No reflections recorded yet..."
-                className="w-full bg-transparent border-none focus:ring-0 text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none h-48 placeholder:text-stone-300 dark:placeholder:text-stone-700"
+                className="w-full bg-transparent border-none focus:ring-0 focus:outline-none focus:border-none focus:shadow-none text-stone-600 dark:text-stone-300 font-serif text-sm leading-relaxed resize-none h-48 placeholder:text-stone-300 dark:placeholder:text-stone-700 caret-[#a31621] outline-none shadow-none appearance-none p-0"
               />
               <div className="mt-4 flex justify-end">
                 <button 
@@ -174,7 +175,7 @@ const EventModal: React.FC<EventModalProps> = ({
                    className={`flex items-center gap-2 text-[9px] uppercase tracking-[0.2em] font-bold transition-all duration-500 py-2 px-4 rounded-full
                      ${showSavedFeedback 
                        ? 'bg-green-500/10 text-green-500' 
-                       : 'text-[#F5AFAF] hover:text-[#a53860] hover:bg-[#F5AFAF]/5'
+                       : 'text-[#a31621] hover:text-[#7d1119] hover:bg-[#a31621]/5'
                      }`}
                 >
                   {showSavedFeedback && (
@@ -196,7 +197,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 type="text" 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 transition-all outline-none text-stone-700 dark:text-stone-200"
+                className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#a31621]/30 transition-all outline-none text-stone-700 dark:text-stone-200"
                 placeholder="What's happening?"
               />
             </div>
@@ -208,7 +209,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   type="time" 
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 outline-none text-stone-700 dark:text-stone-200"
+                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#a31621]/30 outline-none text-stone-700 dark:text-stone-200"
                 />
               </div>
               <div className="flex-1">
@@ -217,7 +218,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   type="time" 
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#F5AFAF]/30 outline-none text-stone-700 dark:text-stone-200"
+                  className="w-full bg-stone-50 dark:bg-stone-800 border-none rounded-xl px-4 py-3.5 focus:ring-1 focus:ring-[#a31621]/30 outline-none text-stone-700 dark:text-stone-200"
                 />
               </div>
             </div>
@@ -228,7 +229,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIcon(undefined)}
-                  className={`flex items-center justify-center h-10 rounded-xl transition-all border ${!icon ? 'border-[#F5AFAF] bg-[#F5AFAF]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
+                  className={`flex items-center justify-center h-10 rounded-xl transition-all border ${!icon ? 'border-[#a31621] bg-[#a31621]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-stone-600" />
                 </button>
@@ -237,7 +238,7 @@ const EventModal: React.FC<EventModalProps> = ({
                     key={key}
                     type="button"
                     onClick={() => setIcon(key)}
-                    className={`flex items-center justify-center h-10 rounded-xl transition-all border ${icon === key ? 'border-[#F5AFAF] bg-[#F5AFAF]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
+                    className={`flex items-center justify-center h-10 rounded-xl transition-all border ${icon === key ? 'border-[#a31621] bg-[#a31621]/10 shadow-lg scale-105' : 'border-stone-100 dark:border-stone-800 hover:border-stone-300 opacity-60'}`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       {ICON_MAP[key]}
@@ -251,7 +252,7 @@ const EventModal: React.FC<EventModalProps> = ({
               <div className="flex justify-between items-center mb-3">
                 <label className="block text-[10px] uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500 font-bold">Color Palette</label>
                 {isCustomColor && (
-                   <span className="text-[8px] uppercase tracking-widest text-[#F5AFAF] font-bold">Custom Active</span>
+                   <span className="text-[8px] uppercase tracking-widest text-[#a31621] font-bold">Custom Active</span>
                 )}
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -291,7 +292,7 @@ const EventModal: React.FC<EventModalProps> = ({
             <div className="pt-4 flex gap-3">
               <button 
                 type="submit"
-                className="flex-1 bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-stone-700 dark:hover:bg-[#a53860] transition-all shadow-xl shadow-[#F5AFAF]/10"
+                className="flex-1 bg-stone-800 dark:bg-[#a31621] text-white dark:text-stone-900 py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-stone-700 dark:hover:bg-[#7d1119] transition-all shadow-xl shadow-[#a31621]/10"
               >
                 {initialEvent ? 'Save Changes' : 'Record Moment'}
               </button>

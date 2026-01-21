@@ -56,12 +56,12 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
       <div className="bg-white dark:bg-stone-900 rounded-[3.5rem] p-12 w-full max-w-xl shadow-2xl border border-stone-100 dark:border-stone-800 fade-in flex flex-col relative overflow-hidden">
         
         {/* Decorative Background Elements */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#F5AFAF]/5 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#F5AFAF]/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#a31621]/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#a31621]/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="flex justify-between items-start mb-12 relative z-10">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] font-bold block mb-2">Cloud Sync</span>
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#a31621] font-bold block mb-2">Cloud Sync</span>
             <h2 className="text-3xl font-bold text-stone-800 dark:text-stone-100 tracking-tight">
               {mode === 'selection' && 'Transfer Data'}
               {mode === 'push' && 'Your Sync Token'}
@@ -70,7 +70,7 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
           </div>
           <button 
             onClick={onClose}
-            className="text-stone-300 dark:text-stone-600 hover:text-[#F5AFAF] transition-all p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl"
+            className="text-stone-300 dark:text-stone-600 hover:text-[#a31621] transition-all p-3 bg-stone-50 dark:bg-stone-800 rounded-2xl"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -84,13 +84,13 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
               <button 
                 onClick={handlePush}
                 disabled={isProcessing}
-                className="group flex items-center justify-between p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-700 hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#F5AFAF]/5 transition-all text-left"
+                className="group flex items-center justify-between p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-700 hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#a31621]/5 transition-all text-left"
               >
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100">Push to Cloud</h3>
                   <p className="text-xs text-stone-400 dark:text-stone-500 font-medium leading-relaxed">Generate a token to move your data <br/>to another device.</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-stone-900 shadow-sm group-hover:bg-[#F5AFAF] group-hover:text-white transition-all">
+                <div className="p-4 rounded-2xl bg-white dark:bg-stone-900 shadow-sm group-hover:bg-[#a31621] group-hover:text-white transition-all">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                   </svg>
@@ -99,13 +99,13 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
 
               <button 
                 onClick={() => setMode('pull')}
-                className="group flex items-center justify-between p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-700 hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#F5AFAF]/5 transition-all text-left"
+                className="group flex items-center justify-between p-8 rounded-[2rem] bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-700 hover:bg-white dark:hover:bg-stone-800 hover:shadow-xl hover:shadow-[#a31621]/5 transition-all text-left"
               >
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100">Pull from Cloud</h3>
                   <p className="text-xs text-stone-400 dark:text-stone-500 font-medium leading-relaxed">Enter a token from another device <br/>to restore your workspace.</p>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-stone-900 shadow-sm group-hover:bg-[#F5AFAF] group-hover:text-white transition-all">
+                <div className="p-4 rounded-2xl bg-white dark:bg-stone-900 shadow-sm group-hover:bg-[#a31621] group-hover:text-white transition-all">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
@@ -121,7 +121,7 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
               </p>
               
               <div className="relative group">
-                <div className="w-full bg-stone-50 dark:bg-stone-800 rounded-3xl p-6 font-mono text-[10px] break-all text-stone-400 dark:text-stone-500 border border-stone-100 dark:border-stone-700 max-h-48 overflow-y-auto selection:bg-[#F5AFAF]/20 custom-scrollbar">
+                <div className="w-full bg-stone-50 dark:bg-stone-800 rounded-3xl p-6 font-mono text-[10px] break-all text-stone-400 dark:text-stone-500 border border-stone-100 dark:border-stone-700 max-h-48 overflow-y-auto selection:bg-[#a31621]/20 custom-scrollbar">
                   {token}
                 </div>
                 <button 
@@ -135,7 +135,7 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
               <div className="flex justify-center">
                  <button 
                   onClick={() => setMode('selection')}
-                  className="text-[10px] uppercase tracking-[0.3em] text-stone-400 hover:text-[#F5AFAF] transition-colors font-bold"
+                  className="text-[10px] uppercase tracking-[0.3em] text-stone-400 hover:text-[#a31621] transition-colors font-bold"
                 >
                   Return to Menu
                 </button>
@@ -154,7 +154,7 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
                   value={token}
                   onChange={(e) => { setToken(e.target.value); setError(''); }}
                   placeholder="Paste token here..."
-                  className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-800 rounded-3xl px-6 py-5 focus:ring-1 focus:ring-[#F5AFAF]/30 transition-all outline-none text-stone-700 dark:text-stone-200 text-[10px] font-mono h-40 resize-none placeholder:italic"
+                  className="w-full bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-800 rounded-3xl px-6 py-5 focus:ring-1 focus:ring-[#a31621]/30 transition-all outline-none text-stone-700 dark:text-stone-200 text-[10px] font-mono h-40 resize-none placeholder:italic"
                   disabled={isProcessing}
                 />
               </div>
@@ -172,7 +172,7 @@ const SyncOverlay: React.FC<SyncOverlayProps> = ({ isOpen, onClose, onSyncComple
                   className={`w-full py-5 rounded-2xl text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-500 shadow-xl
                     ${isProcessing 
                       ? 'bg-stone-100 text-stone-400 cursor-not-allowed' 
-                      : 'bg-stone-800 dark:bg-[#F5AFAF] text-white dark:text-stone-900 hover:scale-[1.02] active:scale-[0.98]'
+                      : 'bg-stone-800 dark:bg-[#a31621] text-white dark:text-stone-900 hover:scale-[1.02] active:scale-[0.98]'
                     }`}
                 >
                   {isProcessing ? 'Syncing...' : 'Restore from Cloud'}
