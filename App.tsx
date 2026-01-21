@@ -19,6 +19,7 @@ import {
 import EventModal, { ICON_MAP } from './components/EventModal';
 import Countdown from './components/Countdown';
 import DailyMarkNote from './components/DailyMarkNote';
+import PomodoroTimer from './components/PomodoroTimer';
 import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
 import SyncOverlay from './components/SyncOverlay';
 import Login from './components/Login';
@@ -502,8 +503,9 @@ const App: React.FC = () => {
         <svg className="absolute -bottom-32 -left-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>
       </div>
 
-      <header className="mb-10 md:mb-20 text-center fade-in relative">
-        <div className="flex flex-wrap justify-center md:absolute md:top-0 md:right-0 gap-2 md:gap-4 mb-8 md:mb-0">
+      <header className="mb-10 md:mb-20 text-center fade-in relative min-h-[140px] md:min-h-[80px]">
+        {/* Left Side Navigation Group (Sync, Moments) */}
+        <div className="flex flex-wrap justify-center md:absolute md:top-0 md:left-0 gap-2 md:gap-4 mb-4 md:mb-0">
            <button 
              onClick={() => setShowSyncOverlay(true)}
              className={`flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#F5AFAF]/20' : ''}`}
@@ -531,34 +533,35 @@ const App: React.FC = () => {
                 <span className="text-[10px] md:text-xs font-bold">{events.length}</span>
              </div>
            </button>
+        </div>
 
-           <div className="flex gap-2">
-             <button 
-               onClick={() => setIsDarkMode(!isDarkMode)}
-               className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
-               aria-label="Toggle Theme"
-             >
-               {isDarkMode ? (
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                 </svg>
-               ) : (
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                 </svg>
-               )}
-             </button>
-
-             <button 
-               onClick={handleLogout}
-               className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-red-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
-               aria-label="Logout"
-             >
+        {/* Right Side Control Group (Theme, Logout) */}
+        <div className="flex flex-wrap justify-center md:absolute md:top-0 md:right-0 gap-2 md:gap-4 mb-8 md:mb-0">
+           <button 
+             onClick={() => setIsDarkMode(!isDarkMode)}
+             className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
+             aria-label="Toggle Theme"
+           >
+             {isDarkMode ? (
                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                </svg>
-             </button>
-           </div>
+             ) : (
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+               </svg>
+             )}
+           </button>
+
+           <button 
+             onClick={handleLogout}
+             className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-red-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
+             aria-label="Logout"
+           >
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+             </svg>
+           </button>
         </div>
 
         <div className="inline-flex items-center justify-center p-4 md:p-6 bg-[#F5AFAF]/10 rounded-full mb-6 md:mb-10">
@@ -634,7 +637,15 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <DailyMarkNote date={activeDateStr} onNoteSaved={refreshData} />
+      {/* SYMMETRICAL COMPACT DUAL-FEATURE ROW */}
+      <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6 max-w-4xl mx-auto mb-20 px-4 w-full h-auto">
+        <div className="flex-1 min-w-0 flex items-stretch">
+          <PomodoroTimer />
+        </div>
+        <div className="flex-1 min-w-0 flex items-stretch">
+          <DailyMarkNote date={activeDateStr} onNoteSaved={refreshData} />
+        </div>
+      </div>
 
       <main className="fade-in min-h-[40vh] md:min-h-[60vh] w-full" style={{animationDelay: '0.2s'}}>
         {viewMode === 'yearly' && (
