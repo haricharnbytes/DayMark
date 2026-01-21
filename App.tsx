@@ -13,7 +13,8 @@ import {
   saveEventToDB, 
   deleteEventFromDB,
   getAllNoteDates,
-  getDailyNote
+  getDailyNote,
+  checkAndPullCloudUpdates
 } from './utils/db';
 import EventModal, { ICON_MAP } from './components/EventModal';
 import Countdown from './components/Countdown';
@@ -66,19 +67,19 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
 
   return (
-    <div className={`${large ? 'p-8 rounded-[2.5rem]' : 'p-4 rounded-[1.5rem]'} bg-white dark:bg-stone-900/60 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-700 ease-out group/month mx-auto w-full`}>
-      <div className={`flex items-center justify-between ${large ? 'mb-8' : 'mb-2.5'} px-1`}>
-        <div className="flex items-center gap-3">
+    <div className={`${large ? 'p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem]' : 'p-3 md:p-4 rounded-[1.25rem] md:rounded-[1.5rem]'} bg-white dark:bg-stone-900/60 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col h-full shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-700 ease-out group/month mx-auto w-full`}>
+      <div className={`flex items-center justify-between ${large ? 'mb-4 md:mb-8' : 'mb-2 md:mb-2.5'} px-1`}>
+        <div className="flex items-center gap-2 md:gap-3">
           {!large && <MonthIcon month={month} />}
-          <h3 className={`${large ? 'text-2xl' : 'text-[11px]'} font-bold text-stone-700 dark:text-stone-200 tracking-[0.2em] uppercase`}>
+          <h3 className={`${large ? 'text-xl md:text-2xl' : 'text-[10px] md:text-[11px]'} font-bold text-stone-700 dark:text-stone-200 tracking-[0.15em] md:tracking-[0.2em] uppercase`}>
             {formatMonthName(month)}
           </h3>
         </div>
       </div>
       
-      <div className={`grid grid-cols-7 ${large ? 'gap-y-4 gap-x-3' : 'gap-y-1.5 gap-x-1'} flex-1 text-center`}>
+      <div className={`grid grid-cols-7 ${large ? 'gap-y-2 md:gap-y-4 gap-x-1 md:gap-x-3' : 'gap-y-1 md:gap-y-1.5 gap-x-0.5 md:gap-x-1'} flex-1 text-center`}>
         {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
-          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-xs' : 'text-[7px]'} uppercase tracking-widest text-stone-400 dark:text-stone-600 font-bold mb-0.5`}>
+          <div key={`${month}-${d}-${idx}`} className={`${large ? 'text-[10px] md:text-xs' : 'text-[6px] md:text-[7px]'} uppercase tracking-widest text-stone-400 dark:text-stone-600 font-bold mb-0.5`}>
             {d}
           </div>
         ))}
@@ -102,10 +103,10 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
             <div key={`${month}-${d}`} className="relative group/day">
               <button
                 onClick={() => onDateClick(d, month)}
-                className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-lg overflow-hidden
+                className={`w-full calendar-date-btn group relative aspect-square flex flex-col items-center justify-center rounded-md md:rounded-lg overflow-hidden
                   ${isClicked ? 'date-pulse z-20' : ''}
                   ${isJustSaved ? 'success-flourish z-20' : ''}
-                  ${active ? 'ring-1.5 ring-[#F5AFAF]/60 shadow-lg shadow-[#F5AFAF]/5 z-10' : ''}
+                  ${active ? 'ring-1 md:ring-1.5 ring-[#F5AFAF]/60 shadow-lg shadow-[#F5AFAF]/5 z-10' : ''}
                   ${today 
                     ? 'bg-[#F5AFAF] text-white shadow-xl shadow-[#F5AFAF]/30 z-10' 
                     : 'text-stone-400 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -114,18 +115,18 @@ const MonthView: React.FC<MonthProps> = ({ year, month, events, noteDates, activ
                 <div className={`absolute inset-0 bg-gradient-to-br from-[#F5AFAF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none ${today ? 'hidden' : ''}`} />
                 
                 {hasNote && !today && (
-                  <div className={`absolute ${large ? 'top-2 right-2 w-1.5 h-1.5' : 'top-1 right-1 w-0.5 h-0.5'} rounded-full bg-[#F5AFAF]/60 animate-pulse`} />
+                  <div className={`absolute ${large ? 'top-1.5 right-1.5 md:top-2 md:right-2 w-1.5 h-1.5' : 'top-0.5 right-0.5 w-0.5 h-0.5 md:w-0.5 md:h-0.5'} rounded-full bg-[#F5AFAF]/60 animate-pulse`} />
                 )}
 
-                <span className={`relative z-10 ${large ? 'text-xl' : 'text-[12px]'} font-bold`}>
+                <span className={`relative z-10 ${large ? 'text-base md:text-xl' : 'text-[10px] md:text-[12px]'} font-bold`}>
                   {d}
                 </span>
                 
                 {/* Event Indicator Dot */}
-                <div className={`absolute z-10 ${large ? 'bottom-2' : 'bottom-1'} flex gap-1 h-1 items-center justify-center w-full`}>
+                <div className={`absolute z-10 ${large ? 'bottom-1.5 md:bottom-2' : 'bottom-0.5 md:bottom-1'} flex gap-0.5 md:gap-1 h-0.5 md:h-1 items-center justify-center w-full`}>
                   {hasEvents && (
                     <div 
-                      className={`rounded-full transition-all ${large ? 'w-1.5 h-1.5 shadow-[0_0_5px_rgba(0,0,0,0.1)]' : 'w-1 h-1'} ${today ? 'bg-white' : ''}`}
+                      className={`rounded-full transition-all ${large ? 'w-1 md:w-1.5 h-1 md:h-1.5 shadow-[0_0_3px_rgba(0,0,0,0.1)]' : 'w-0.5 h-0.5 md:w-1 md:h-1'} ${today ? 'bg-white' : ''}`}
                       style={!today ? { backgroundColor: primaryEventColor } : {}}
                     />
                   )}
@@ -160,7 +161,7 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 w-full month-transition">
+    <div className="grid grid-cols-1 md:grid-cols-7 gap-3 md:gap-4 w-full month-transition">
       {weekDays.map((date, idx) => {
         const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const dayEvents = events.filter(e => e.date === dStr);
@@ -168,27 +169,27 @@ const WeeklyView: React.FC<{ year: number, month: number, day: number, events: C
         const today = isToday(date.getFullYear(), date.getMonth(), date.getDate());
 
         return (
-          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-6 rounded-[2.5rem] bg-white dark:bg-stone-900/40 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col gap-4 min-h-[400px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#F5AFAF]/30' : ''}`}>
+          <div key={idx} onClick={() => onDateClick(date.getDate(), date.getMonth())} className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] bg-white dark:bg-stone-900/40 backdrop-blur-md border border-stone-200 dark:border-stone-800 flex flex-col gap-3 md:gap-4 min-h-[200px] md:min-h-[400px] shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer ${today ? 'ring-2 ring-[#F5AFAF]/30' : ''}`}>
             <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-widest text-stone-400 dark:text-stone-500 font-bold mb-2">
+              <span className="text-[10px] md:text-[11px] uppercase tracking-widest text-stone-400 dark:text-stone-500 font-bold mb-1 md:mb-2">
                 {date.toLocaleDateString('en-US', { weekday: 'short' })}
               </span>
               <div className="flex items-center gap-2">
-                <span className={`text-5xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
+                <span className={`text-3xl md:text-5xl font-bold ${today ? 'text-[#F5AFAF]' : 'text-stone-700 dark:text-stone-200'}`}>
                   {date.getDate()}
                 </span>
-                {hasNote && <div className="w-2.5 h-2.5 rounded-full bg-[#F5AFAF] mt-2" title="Journal Mark" />}
+                {hasNote && <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-[#F5AFAF] mt-1 md:mt-2" title="Journal Mark" />}
               </div>
             </div>
-            <div className="flex flex-col gap-2 flex-1 mt-4">
+            <div className="flex flex-col gap-1.5 md:gap-2 flex-1 mt-2 md:mt-4">
               {dayEvents.map(e => (
                 <div 
                   key={e.id} 
                   onClick={(event) => handleEventClick(event, e.id)}
-                  className={`text-[12px] p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
+                  className={`text-[10px] md:text-[12px] p-2 md:p-4 rounded-lg md:rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-700/50 text-stone-600 dark:text-stone-300 transition-all duration-300 ${expandedEventId === e.id ? 'shadow-inner' : 'truncate'}`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0 border border-black/5 dark:border-white/10" style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0 border border-black/5 dark:border-white/10" style={{ backgroundColor: e.color || '#F5AFAF' }} />
                     <span className="font-bold truncate">{e.title}</span>
                   </div>
                 </div>
@@ -230,32 +231,32 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-8 md:p-16 rounded-[4rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition cursor-pointer" onClick={() => onDateClick(day, month)}>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-10 mb-20">
+    <div className="max-w-4xl mx-auto bg-white dark:bg-stone-900/40 backdrop-blur-md p-6 md:p-16 rounded-[2.5rem] md:rounded-[4rem] border border-stone-200 dark:border-stone-800 shadow-2xl month-transition cursor-pointer" onClick={() => onDateClick(day, month)}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 md:gap-10 mb-10 md:mb-20">
         <div>
-          <h3 className="text-stone-400 dark:text-stone-500 text-sm uppercase tracking-[0.4em] font-bold mb-4">Daily View</h3>
-          <h2 className="text-5xl md:text-7xl font-bold text-stone-800 dark:text-stone-100">
+          <h3 className="text-stone-400 dark:text-stone-500 text-[10px] md:text-sm uppercase tracking-[0.4em] font-bold mb-2 md:mb-4">Daily View</h3>
+          <h2 className="text-3xl md:text-7xl font-bold text-stone-800 dark:text-stone-100">
             {new Date(dStr + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' })}
           </h2>
-          {hasNote && <p className="text-[#F5AFAF] text-xs uppercase tracking-[0.3em] font-bold mt-4">Marked Day</p>}
+          {hasNote && <p className="text-[#F5AFAF] text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold mt-2 md:mt-4">Marked Day</p>}
         </div>
-        {today && <span className="w-fit bg-[#F5AFAF] text-white px-8 py-3 rounded-full text-xs uppercase tracking-[0.3em] font-bold shadow-xl shadow-[#F5AFAF]/20">Today</span>}
+        {today && <span className="w-fit bg-[#F5AFAF] text-white px-6 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold shadow-xl shadow-[#F5AFAF]/20">Today</span>}
       </div>
 
       {noteContent && (
-        <div className="mb-16 p-10 bg-stone-50 dark:bg-stone-800/50 rounded-[2.5rem] border border-stone-100 dark:border-stone-800">
-          <span className="text-xs uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-6">Reflection</span>
-          <p className="font-serif italic text-stone-600 dark:text-stone-300 text-2xl leading-relaxed">
+        <div className="mb-10 md:mb-16 p-6 md:p-10 bg-stone-50 dark:bg-stone-800/50 rounded-[1.5rem] md:rounded-[2.5rem] border border-stone-100 dark:border-stone-800">
+          <span className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-[#F5AFAF] font-bold block mb-4 md:mb-6">Reflection</span>
+          <p className="font-serif italic text-stone-600 dark:text-stone-300 text-xl md:text-2xl leading-relaxed">
             {noteContent}
           </p>
         </div>
       )}
 
-      <div className="space-y-12">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="text-xs uppercase tracking-[0.3em] text-stone-400 dark:text-stone-500 font-bold">Recorded Moments</h3>
+      <div className="space-y-8 md:space-y-12">
+        <div className="flex justify-between items-center mb-6 md:mb-8">
+          <h3 className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-stone-400 dark:text-stone-500 font-bold">Recorded Moments</h3>
           <button 
-            className="text-xs uppercase tracking-widest text-[#F5AFAF] font-bold bg-[#F5AFAF]/10 px-6 py-2 rounded-full hover:bg-[#F5AFAF]/20 transition-all"
+            className="text-[10px] md:text-xs uppercase tracking-widest text-[#F5AFAF] font-bold bg-[#F5AFAF]/10 px-4 md:px-6 py-2 rounded-full hover:bg-[#F5AFAF]/20 transition-all"
             onClick={(e) => { e.stopPropagation(); onDateClick(day, month); }}
           >
             Add New
@@ -264,30 +265,30 @@ const DailyView: React.FC<{ year: number, month: number, day: number, events: Ca
         {dayEvents.length > 0 ? dayEvents.map(e => {
           const status = getMomentStatus(e);
           return (
-            <div key={e.id} className="flex gap-8 md:gap-12 items-start group cursor-pointer" onClick={(event) => { event.stopPropagation(); onDateClick(day, month, e); }}>
-              <div className="text-sm font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-2 w-20 md:w-24 text-right shrink-0 tabular-nums">
+            <div key={e.id} className="flex gap-4 md:gap-12 items-start group cursor-pointer" onClick={(event) => { event.stopPropagation(); onDateClick(day, month, e); }}>
+              <div className="text-[11px] md:text-sm font-bold text-stone-400 dark:text-stone-600 tracking-widest pt-1.5 md:pt-2 w-16 md:w-24 text-right shrink-0 tabular-nums">
                 {e.startTime || 'Day'}
               </div>
-              <div className="flex-1 pb-10 border-b border-stone-100 dark:border-stone-800 last:border-0">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-4 h-4 rounded-full transition-transform duration-500 group-hover:scale-125 border border-black/5 dark:border-white/10 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
-                    <h4 className={`text-2xl md:text-3xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
+              <div className="flex-1 pb-6 md:pb-10 border-b border-stone-100 dark:border-stone-800 last:border-0">
+                <div className="flex items-center justify-between mb-2 md:mb-4">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-transform duration-500 group-hover:scale-125 border border-black/5 dark:border-white/10 ${status === 'passed' ? 'opacity-40' : ''}`} style={{ backgroundColor: e.color || '#F5AFAF' }} />
+                    <h4 className={`text-xl md:text-3xl font-bold transition-opacity duration-500 ${status === 'passed' ? 'text-stone-400 dark:text-stone-600' : 'text-stone-700 dark:text-stone-200'}`}>{e.title}</h4>
                   </div>
                   {status === 'active' && (
-                    <span className="text-[10px] uppercase tracking-[0.3em] bg-[#F5AFAF]/10 text-[#F5AFAF] px-4 py-1.5 rounded-full font-bold animate-pulse">Live</span>
+                    <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] bg-[#F5AFAF]/10 text-[#F5AFAF] px-3 md:px-4 py-1 md:py-1.5 rounded-full font-bold animate-pulse">Live</span>
                   )}
                 </div>
-                <p className={`text-lg leading-relaxed italic truncate transition-opacity duration-500 ${status === 'passed' ? 'text-stone-300 dark:text-stone-700' : 'text-stone-500 dark:text-stone-400'}`}>
+                <p className={`text-base md:text-lg leading-relaxed italic truncate transition-opacity duration-500 ${status === 'passed' ? 'text-stone-300 dark:text-stone-700' : 'text-stone-500 dark:text-stone-400'}`}>
                   {e.description || '...'}
                 </p>
               </div>
             </div>
           );
         }) : (
-          <div className="py-32 text-center text-stone-300 dark:text-stone-700">
-            <p className="italic text-4xl mb-6 opacity-30">A clean slate...</p>
-            <p className="text-xs uppercase tracking-[0.4em] font-bold opacity-50">Tap anywhere to record</p>
+          <div className="py-16 md:py-32 text-center text-stone-300 dark:text-stone-700">
+            <p className="italic text-2xl md:text-4xl mb-4 md:mb-6 opacity-30">A clean slate...</p>
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.4em] font-bold opacity-50">Tap anywhere to record</p>
           </div>
         )}
       </div>
@@ -309,7 +310,7 @@ const App: React.FC = () => {
     return saved ? saved === 'dark' : false;
   });
 
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'error' | 'synced'>('idle');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [noteDates, setNoteDates] = useState<string[]>([]);
   
@@ -321,21 +322,43 @@ const App: React.FC = () => {
   const [clickedDateId, setClickedDateId] = useState<string|null>(null);
   const [justSavedDateStr, setJustSavedDateStr] = useState<string|null>(null);
 
+  const refreshData = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const storedEvents = await getAllEvents();
+      const storedNoteDates = await getAllNoteDates();
+      setEvents(storedEvents || []);
+      setNoteDates(storedNoteDates || []);
+    } catch (e) {
+      console.error('DayMark Refresh Error:', e);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     const onStart = () => setSyncStatus('syncing');
-    const onEnd = () => { setSyncStatus('idle'); refreshData(); };
+    const onEnd = () => { 
+      setSyncStatus('synced'); 
+      refreshData();
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    };
     const onError = () => setSyncStatus('error');
 
     window.addEventListener('daymark-sync-start', onStart);
     window.addEventListener('daymark-sync-complete', onEnd);
     window.addEventListener('daymark-sync-error', onError);
 
+    // Setup background polling for bi-directional sync (every 15s)
+    const pollInterval = setInterval(() => {
+      if (isAuthenticated) checkAndPullCloudUpdates();
+    }, 15000);
+
     return () => {
       window.removeEventListener('daymark-sync-start', onStart);
       window.removeEventListener('daymark-sync-complete', onEnd);
       window.removeEventListener('daymark-sync-error', onError);
+      clearInterval(pollInterval);
     };
-  }, []);
+  }, [refreshData, isAuthenticated]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -350,18 +373,6 @@ const App: React.FC = () => {
   const activeDateStr = useMemo(() => {
     return `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(viewDay).padStart(2, '0')}`;
   }, [viewYear, viewMonth, viewDay]);
-
-  const refreshData = useCallback(async () => {
-    if (!isAuthenticated) return;
-    try {
-      const storedEvents = await getAllEvents();
-      const storedNoteDates = await getAllNoteDates();
-      setEvents(storedEvents || []);
-      setNoteDates(storedNoteDates || []);
-    } catch (e) {
-      console.error('DayMark Refresh Error:', e);
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -484,88 +495,94 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-stone-800 dark:text-stone-200 px-6 md:px-12 py-12 md:py-20 w-full selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
+    <div className="min-h-screen bg-white dark:bg-black text-stone-800 dark:text-stone-200 px-4 md:px-12 py-8 md:py-20 w-full selection:bg-[#F5AFAF]/20 overflow-x-hidden transition-colors duration-700">
       
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.05] overflow-hidden -z-10">
-        <svg className="absolute -top-32 -right-32 w-[40rem] h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
-        <svg className="absolute -bottom-32 -left-32 w-[40rem] h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>
+        <svg className="absolute -top-32 -right-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" /></svg>
+        <svg className="absolute -bottom-32 -left-32 w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] text-[#F5AFAF]" fill="currentColor" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>
       </div>
 
-      <header className="mb-20 text-center fade-in relative">
-        <div className="absolute top-0 right-0 flex gap-4">
+      <header className="mb-10 md:mb-20 text-center fade-in relative">
+        <div className="flex flex-wrap justify-center md:absolute md:top-0 md:right-0 gap-2 md:gap-4 mb-8 md:mb-0">
            <button 
              onClick={() => setShowSyncOverlay(true)}
-             className={`flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#F5AFAF]/20' : ''}`}
+             className={`flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group ${syncStatus === 'syncing' ? 'ring-2 ring-[#F5AFAF]/20' : ''}`}
              aria-label="Cloud Status"
            >
-             <span className="text-xs uppercase tracking-[0.3em] font-bold">
-               {syncStatus === 'syncing' ? 'Syncing' : 'Cloud'}
+             <span className="text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">
+               {syncStatus === 'syncing' ? 'Syncing' : syncStatus === 'synced' ? 'Ready' : 'Everywhere'}
              </span>
-             <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${syncStatus === 'syncing' ? 'animate-spin text-[#F5AFAF]' : ''} ${syncStatus === 'error' ? 'text-red-400' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+             <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 md:h-5 md:w-5 ${syncStatus === 'syncing' ? 'animate-spin text-[#F5AFAF]' : ''} ${syncStatus === 'error' ? 'text-red-400' : ''} ${syncStatus === 'synced' ? 'text-green-500' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               {syncStatus === 'synced' ? (
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+               ) : (
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+               )}
              </svg>
            </button>
 
            <button 
              onClick={() => setShowEventsOverlay(true)}
-             className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group"
+             className="flex items-center gap-2 md:gap-4 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-105 active:scale-95 shadow-sm group"
              aria-label="Toggle Events Overlay"
            >
-             <span className="text-xs uppercase tracking-[0.3em] font-bold">Moments</span>
-             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-7 min-w-[28px] px-2 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
-                <span className="text-xs font-bold">{events.length}</span>
+             <span className="text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold whitespace-nowrap">Moments</span>
+             <div className="flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-full h-6 md:h-7 min-w-[24px] md:min-w-[28px] px-1.5 md:px-2 transition-colors group-hover:bg-[#F5AFAF]/10 group-hover:text-[#F5AFAF]">
+                <span className="text-[10px] md:text-xs font-bold">{events.length}</span>
              </div>
            </button>
 
-           <button 
-             onClick={() => setIsDarkMode(!isDarkMode)}
-             className="p-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
-             aria-label="Toggle Theme"
-           >
-             {isDarkMode ? (
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-               </svg>
-             ) : (
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-               </svg>
-             )}
-           </button>
+           <div className="flex gap-2">
+             <button 
+               onClick={() => setIsDarkMode(!isDarkMode)}
+               className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-[#F5AFAF] transition-all hover:scale-110 active:scale-95 shadow-sm"
+               aria-label="Toggle Theme"
+             >
+               {isDarkMode ? (
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                 </svg>
+               ) : (
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                 </svg>
+               )}
+             </button>
 
-           <button 
-             onClick={handleLogout}
-             className="p-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-red-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
-             aria-label="Logout"
-           >
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-             </svg>
-           </button>
+             <button 
+               onClick={handleLogout}
+               className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-red-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
+               aria-label="Logout"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+               </svg>
+             </button>
+           </div>
         </div>
 
-        <div className="inline-flex items-center justify-center p-6 bg-[#F5AFAF]/10 rounded-full mb-10">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-[#F5AFAF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="inline-flex items-center justify-center p-4 md:p-6 bg-[#F5AFAF]/10 rounded-full mb-6 md:mb-10">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-10 md:w-10 text-[#F5AFAF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
           </svg>
         </div>
-        <h1 className="text-5xl md:text-8xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.4em] uppercase mb-8">
+        <h1 className="text-4xl md:text-8xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.3em] md:tracking-[0.4em] uppercase mb-4 md:mb-8">
           DayMark
         </h1>
-        <div className="h-0.5 w-32 bg-[#F5AFAF]/20 mx-auto mb-16"></div>
+        <div className="h-0.5 w-16 md:w-32 bg-[#F5AFAF]/20 mx-auto mb-10 md:mb-16"></div>
         
         <Countdown upcomingEvents={upcomingEvents} />
       </header>
 
       {/* Persistent Control Bar Section */}
-      <div className="flex flex-col gap-12 mb-20 fade-in w-full">
+      <div className="flex flex-col gap-8 md:gap-12 mb-10 md:mb-20 fade-in w-full">
         {/* View Selection Tabs */}
-        <div className="flex items-center justify-center gap-3 bg-white dark:bg-stone-900/40 p-3 rounded-full backdrop-blur-md border border-stone-200 dark:border-stone-800 max-w-lg mx-auto shadow-sm w-full">
+        <div className="flex items-center justify-center gap-1 md:gap-3 bg-white dark:bg-stone-900/40 p-2 md:p-3 rounded-full backdrop-blur-md border border-stone-200 dark:border-stone-800 max-w-lg mx-auto shadow-sm w-full">
           {(['yearly', 'monthly', 'weekly', 'daily'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`flex-1 px-4 py-3 rounded-full text-xs uppercase tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#F5AFAF] text-white shadow-xl' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/50'}`}
+              className={`flex-1 px-2 md:px-4 py-2 md:py-3 rounded-full text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold transition-all duration-500 ${viewMode === mode ? 'bg-[#F5AFAF] text-white shadow-xl' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/50'}`}
             >
               {mode}
             </button>
@@ -573,44 +590,44 @@ const App: React.FC = () => {
         </div>
 
         {/* Navigation Strip */}
-        <div className="flex items-center justify-between w-full gap-8">
-          <button onClick={() => navigate(-1)} className="group flex items-center gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all shrink-0">
-            <div className="p-4 rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        <div className="flex items-center justify-between w-full gap-2 md:gap-8">
+          <button onClick={() => navigate(-1)} className="group flex items-center gap-2 md:gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all shrink-0">
+            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </div>
-            <span className="text-xs uppercase tracking-[0.3em] font-bold hidden xl:inline">Previous</span>
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold hidden xl:inline">Previous</span>
           </button>
           
-          <div className="flex flex-col items-center gap-3 text-center flex-1 min-w-0">
-            <h2 className="text-3xl md:text-6xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.1em] leading-tight truncate w-full">
+          <div className="flex flex-col items-center gap-1 md:gap-3 text-center flex-1 min-w-0">
+            <h2 className="text-xl md:text-6xl font-bold text-stone-800 dark:text-stone-100 tracking-[0.05em] md:tracking-[0.1em] leading-tight truncate w-full">
               {navLabel}
             </h2>
             <button 
               onClick={jumpToToday}
-              className="text-[10px] uppercase tracking-[0.4em] text-[#F5AFAF] hover:text-[#a53860] dark:hover:text-white transition-colors font-bold py-2"
+              className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-[#F5AFAF] hover:text-[#a53860] dark:hover:text-white transition-colors font-bold py-1"
             >
               Back to Today
             </button>
           </div>
 
-          <button onClick={() => navigate(1)} className="group flex items-center gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all text-right shrink-0">
-            <span className="text-xs uppercase tracking-[0.3em] font-bold hidden xl:inline">Next</span>
-            <div className="p-4 rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <button onClick={() => navigate(1)} className="group flex items-center gap-2 md:gap-6 text-stone-400 dark:text-stone-700 hover:text-stone-800 dark:hover:text-stone-200 transition-all text-right shrink-0">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold hidden xl:inline">Next</span>
+            <div className="p-3 md:p-4 rounded-2xl md:rounded-3xl group-hover:bg-[#F5AFAF]/10 transition-colors border border-transparent group-hover:border-[#F5AFAF]/10">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </div>
           </button>
         </div>
 
         {/* Secondary Month Navigator */}
-        <div className={`transition-all duration-500 overflow-hidden ${viewMode === 'monthly' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
-          <div className="flex justify-center flex-wrap gap-3 py-2">
+        <div className={`transition-all duration-500 overflow-hidden ${viewMode === 'monthly' ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+          <div className="flex justify-center flex-wrap gap-2 py-2">
             {months.map(m => (
               <button 
                 key={m} 
                 onClick={() => setViewMonth(m)} 
-                className={`px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.3em] font-bold transition-all duration-300 ${viewMonth === m ? 'bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 scale-105 shadow-xl' : 'text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400'}`}
+                className={`px-3 md:px-6 py-1.5 md:py-2 rounded-full text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] font-bold transition-all duration-300 ${viewMonth === m ? 'bg-stone-800 dark:bg-stone-100 text-white dark:text-stone-900 scale-105 shadow-xl' : 'text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400'}`}
               >
-                {formatMonthName(m)}
+                {formatMonthName(m).substring(0, 3)}
               </button>
             ))}
           </div>
@@ -619,7 +636,7 @@ const App: React.FC = () => {
 
       <DailyMarkNote date={activeDateStr} onNoteSaved={refreshData} />
 
-      <main className="fade-in min-h-[60vh] w-full" style={{animationDelay: '0.2s'}}>
+      <main className="fade-in min-h-[40vh] md:min-h-[60vh] w-full" style={{animationDelay: '0.2s'}}>
         {viewMode === 'yearly' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
             {months.map(m => (
@@ -639,7 +656,7 @@ const App: React.FC = () => {
         )}
 
         {viewMode === 'monthly' && (
-          <div className="w-full max-w-4xl mx-auto px-4">
+          <div className="w-full max-w-4xl mx-auto px-1 md:px-4">
              <div className="month-transition" key={`${viewYear}-${viewMonth}`}>
                <MonthView 
                  year={viewYear} 
@@ -665,13 +682,13 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="mt-32 text-center text-stone-400 dark:text-stone-700 text-[11px] uppercase tracking-[0.6em] pb-32 flex flex-col items-center gap-8">
-        <div className="h-px w-20 bg-stone-200 dark:bg-stone-800"></div>
-        <div className="flex flex-col gap-4">
-          <span className="italic capitalize text-stone-500 text-lg">Mindful Tracking &bull; DayMark &bull; {new Date().getFullYear()}</span>
+      <footer className="mt-16 md:mt-32 text-center text-stone-400 dark:text-stone-700 text-[9px] md:text-[11px] uppercase tracking-[0.4em] md:tracking-[0.6em] pb-16 md:pb-32 flex flex-col items-center gap-6 md:gap-8">
+        <div className="h-px w-12 md:w-20 bg-stone-200 dark:bg-stone-800"></div>
+        <div className="flex flex-col gap-3 md:gap-4">
+          <span className="italic capitalize text-stone-500 text-base md:text-lg">Mindful Tracking &bull; DayMark &bull; {new Date().getFullYear()}</span>
           <button 
             onClick={handleLogout}
-            className="text-[9px] uppercase tracking-[0.3em] text-stone-500 hover:text-[#F5AFAF] transition-colors"
+            className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] text-stone-500 hover:text-[#F5AFAF] transition-colors"
           >
             Lock Workspace
           </button>
