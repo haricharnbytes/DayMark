@@ -298,6 +298,16 @@ const App: React.FC = () => {
     setTimeout(() => setClickedDateId(null), 300);
   };
 
+  const handleEditEventFromOverlay = (event: CalendarEvent) => {
+    const d = new Date(event.date + 'T12:00:00');
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+    setViewDay(d.getDate());
+    setSelectedDate(event.date);
+    setEditingEvent(event);
+    setIsModalOpen(true);
+  };
+
   const handleSaveEvent = useCallback(async (event: CalendarEvent) => {
     await saveEventToDB(event);
     await refreshData();
@@ -478,7 +488,7 @@ const App: React.FC = () => {
       </footer>
 
       <EventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveEvent} onDelete={handleDeleteEvent} selectedDate={selectedDate} initialEvent={editingEvent} onNoteUpdated={refreshData} />
-      <UpcomingEventsOverlay isOpen={showEventsOverlay} onClose={() => setShowEventsOverlay(false)} upcomingEvents={upcomingEvents} />
+      <UpcomingEventsOverlay isOpen={showEventsOverlay} onClose={() => setShowEventsOverlay(false)} upcomingEvents={upcomingEvents} onEditEvent={handleEditEventFromOverlay} />
       <SyncOverlay isOpen={showSyncOverlay} onClose={() => setShowSyncOverlay(false)} onSyncComplete={refreshData} />
     </div>
   );
