@@ -23,6 +23,7 @@ import PomodoroTimer from './components/PomodoroTimer';
 import UpcomingEventsOverlay from './components/UpcomingEventsOverlay';
 import SyncOverlay from './components/SyncOverlay';
 import ContributionGraph from './components/ContributionGraph';
+import ImportantMoments from './components/ImportantMoments';
 import Login from './components/Login';
 
 type ViewMode = 'yearly' | 'monthly' | 'weekly' | 'daily';
@@ -238,6 +239,7 @@ const App: React.FC = () => {
   const [viewDay, setViewDay] = useState(new Date().getDate());
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [isSyncingUI, setIsSyncingUI] = useState(false);
   const [now, setNow] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [noteDates, setNoteDates] = useState<string[]>([]);
@@ -256,11 +258,43 @@ const App: React.FC = () => {
 
   const refreshData = useCallback(async () => {
     if (!isAuthenticated) return;
-    const storedEvents = await getAllEvents();
-    const storedNoteDates = await getAllNoteDates();
+    const [storedEvents, storedNoteDates] = await Promise.all([
+      getAllEvents(),
+      getAllNoteDates()
+    ]);
     setEvents(storedEvents || []);
     setNoteDates(storedNoteDates || []);
   }, [isAuthenticated]);
+
+  // Enhanced Real-time background sync polling
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    // Poll every 10 seconds for cloud updates
+    const syncInterval = setInterval(() => {
+      checkAndPullCloudUpdates();
+    }, 10000);
+
+    const handleSyncStart = () => setIsSyncingUI(true);
+    const handleSyncComplete = () => {
+      setIsSyncingUI(false);
+      refreshData();
+    };
+    const handleSyncError = () => setIsSyncingUI(false);
+
+    window.addEventListener('daymark-sync-start', handleSyncStart);
+    window.addEventListener('daymark-sync-complete', handleSyncComplete);
+    window.addEventListener('daymark-sync-error', handleSyncError);
+    window.addEventListener('daymark-local-update', handleSyncComplete);
+
+    return () => {
+      clearInterval(syncInterval);
+      window.removeEventListener('daymark-sync-start', handleSyncStart);
+      window.removeEventListener('daymark-sync-complete', handleSyncComplete);
+      window.removeEventListener('daymark-sync-error', handleSyncError);
+      window.removeEventListener('daymark-local-update', handleSyncComplete);
+    };
+  }, [isAuthenticated, refreshData]);
 
   useEffect(() => {
     if (isDarkMode) document.documentElement.classList.add('dark');
@@ -339,9 +373,18 @@ const App: React.FC = () => {
       
       {/* HEADER */}
       <header className="mb-8 md:mb-16 text-center relative">
-        <div className="flex justify-center md:absolute md:top-0 md:left-0 gap-4 md:gap-5 mb-8 md:mb-0">
-           <button onClick={() => setShowSyncOverlay(true)} className="px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] uppercase tracking-[0.25em] font-bold hover:bg-stone-50 transition-all shadow-sm">Sync</button>
-           <button onClick={() => setShowEventsOverlay(true)} className="px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] uppercase tracking-[0.25em] font-bold hover:bg-stone-50 transition-all shadow-sm">Moments ({events.length})</button>
+        <div className="flex flex-col items-center md:items-start justify-center md:absolute md:top-0 md:left-0 gap-4 md:gap-5 mb-8 md:mb-0">
+           <div className="flex gap-4 md:gap-5 relative">
+             <button onClick={() => setShowSyncOverlay(true)} className="px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] uppercase tracking-[0.25em] font-bold hover:bg-stone-50 transition-all shadow-sm flex items-center gap-3">
+               Sync
+               {isSyncingUI && <div className="w-1.5 h-1.5 rounded-full bg-[#a31621] animate-ping" />}
+             </button>
+             <button onClick={() => setShowEventsOverlay(true)} className="px-6 py-4 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] uppercase tracking-[0.25em] font-bold hover:bg-stone-50 transition-all shadow-sm">Moments ({events.length})</button>
+           </div>
+           
+           <div className="hidden md:block">
+             <ImportantMoments events={events} onEditEvent={handleEditEventFromOverlay} />
+           </div>
         </div>
 
         {/* Top Right Utility Buttons with Tooltips */}
@@ -430,6 +473,11 @@ const App: React.FC = () => {
         <Countdown upcomingEvents={upcomingEvents} />
       </header>
 
+      {/* MOBILE ONLY IMPORTANT MOMENTS */}
+      <div className="md:hidden mb-12 flex justify-center px-6">
+        <ImportantMoments events={events} onEditEvent={handleEditEventFromOverlay} />
+      </div>
+
       {/* CONTROL BAR */}
       <div className="flex flex-col gap-5 md:gap-6 mb-16 w-full max-w-4xl mx-auto">
         <div className="flex justify-center gap-2 bg-stone-50 dark:bg-stone-900/40 p-1.5 rounded-full border border-stone-200 dark:border-stone-800 max-w-xs mx-auto w-full shadow-inner">
@@ -442,7 +490,7 @@ const App: React.FC = () => {
           <button onClick={() => navigate(-1)} className="p-4 rounded-2xl hover:bg-stone-50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" /></svg></button>
           <div className="text-center">
             <h2 className="text-3xl md:text-6xl font-bold tracking-tight text-stone-800 dark:text-stone-100">{viewMode === 'daily' ? new Date(activeDateStr + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (viewMode === 'monthly' ? `${formatMonthName(viewMonth)} ${viewYear}` : viewYear)}</h2>
-            <button onClick={() => { const t = new Date(); setViewYear(t.getFullYear()); setViewMonth(t.getMonth()); setViewDay(t.getDate()); }} className="text-[12px] uppercase tracking-[0.4em] text-[#a31621] font-bold hover:text-[#7d1119] transition-colors mt-4">Today</button>
+            <button onClick={() => { const t = new Date(); setViewYear(t.getFullYear()); setViewMonth(t.getMonth()); setViewDay(t.getDate()); refreshData(); }} className="text-[12px] uppercase tracking-[0.4em] text-[#a31621] font-bold hover:text-[#7d1119] transition-colors mt-4">Today</button>
           </div>
           <button onClick={() => navigate(1)} className="p-4 rounded-2xl hover:bg-stone-50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg></button>
         </div>

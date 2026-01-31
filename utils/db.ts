@@ -9,14 +9,19 @@ const NOTES_STORE = 'dailyNotes';
 // Using a resilient public JSON endpoint for the demo sync feature.
 const CLOUD_SYNC_URL = 'https://jsonblob.com/api/jsonBlob'; 
 
+// Local communication channel for cross-tab synchronization
+const syncChannel = new BroadcastChannel('daymark_sync_channel');
+
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onerror = () => reject('Error opening database: ' + request.error?.message);
       request.onsuccess = () => resolve(request.result);
+      
+      // Fixed: corrected parameter type to IDBVersionChangeEvent and accessed result via request.result
       request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-        const db = (event.target as IDBOpenDBRequest).result;
+        const db = request.result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
           store.createIndex('date', 'date', { unique: false });
@@ -41,14 +46,21 @@ export const getAllEvents = async (): Promise<CalendarEvent[]> => {
   });
 };
 
+const notifyLocalTabs = () => {
+  syncChannel.postMessage('refresh');
+  window.dispatchEvent(new CustomEvent('daymark-local-update'));
+};
+
 export const saveEventToDB = async (event: CalendarEvent): Promise<void> => {
   const db = await initDB();
   return new Promise((resolve) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
+    if (!event.createdAt) event.createdAt = Date.now();
     store.put(event);
     transaction.oncomplete = () => {
       localStorage.setItem('daymark_needs_push', 'true');
+      notifyLocalTabs();
       resolve();
       triggerAutoCloudSync(); 
     };
@@ -63,6 +75,7 @@ export const deleteEventFromDB = async (id: string): Promise<void> => {
     store.delete(id);
     transaction.oncomplete = () => {
       localStorage.setItem('daymark_needs_push', 'true');
+      notifyLocalTabs();
       resolve();
       triggerAutoCloudSync();
     };
@@ -87,6 +100,7 @@ export const saveDailyNote = async (date: string, content: string): Promise<void
     store.put({ date, content, updatedAt: Date.now() });
     transaction.oncomplete = () => {
       localStorage.setItem('daymark_needs_push', 'true');
+      notifyLocalTabs();
       resolve();
       triggerAutoCloudSync();
     };
@@ -110,10 +124,6 @@ export const getAllNoteDates = async (): Promise<string[]> => {
 
 let isSyncing = false;
 
-/**
- * Pushes local data to the cloud. 
- * Includes safety checks for network availability.
- */
 export const triggerAutoCloudSync = async () => {
   if (isSyncing || !navigator.onLine) return;
   const cloudId = localStorage.getItem('daymark_cloud_id');
@@ -146,26 +156,16 @@ export const triggerAutoCloudSync = async () => {
       localStorage.removeItem('daymark_needs_push');
       window.dispatchEvent(new CustomEvent('daymark-sync-complete'));
     } else if (res.status === 404) {
-      // If the blob was deleted or expired, try to re-create it
       await createInitialCloudStorage(cloudId, payload);
       window.dispatchEvent(new CustomEvent('daymark-sync-complete'));
-    } else {
-      throw new Error('Sync failed with status ' + res.status);
     }
   } catch (e) {
-    // Only log real errors, ignore standard fetch interruptions
-    if (e instanceof Error && e.name !== 'AbortError') {
-      console.warn('DayMark Cloud Push Skipped:', e.message);
-    }
     window.dispatchEvent(new CustomEvent('daymark-sync-error'));
   } finally {
     isSyncing = false;
   }
 };
 
-/**
- * Checks for updates from the cloud if the browser is online.
- */
 export const checkAndPullCloudUpdates = async () => {
   if (isSyncing || !navigator.onLine) return;
   const cloudId = localStorage.getItem('daymark_cloud_id');
@@ -178,30 +178,42 @@ export const checkAndPullCloudUpdates = async () => {
     const cloudData = await response.json();
     const lastLocalSync = parseInt(localStorage.getItem('daymark_last_sync') || '0');
 
-    // Only pull if cloud is significantly newer and we don't have pending local changes
+    // Only pull if cloud is strictly newer and we don't have pending local changes to push
     if (cloudData.updatedAt > lastLocalSync && !localStorage.getItem('daymark_needs_push')) {
       isSyncing = true;
       window.dispatchEvent(new CustomEvent('daymark-sync-start'));
       
       const db = await initDB();
-      // Restore Events
-      const eventTx = db.transaction(STORE_NAME, 'readwrite');
-      const eventStore = eventTx.objectStore(STORE_NAME);
-      await new Promise(r => { eventStore.clear().onsuccess = r; });
-      if (cloudData.events) cloudData.events.forEach((e: any) => eventStore.put(e));
+      
+      const restoreEvents = new Promise<void>((resolve) => {
+        const eventTx = db.transaction(STORE_NAME, 'readwrite');
+        const eventStore = eventTx.objectStore(STORE_NAME);
+        eventStore.clear().onsuccess = () => {
+          if (cloudData.events) {
+            cloudData.events.forEach((e: any) => eventStore.put(e));
+          }
+          resolve();
+        };
+      });
 
-      // Restore Notes
-      const noteTx = db.transaction(NOTES_STORE, 'readwrite');
-      const noteStore = noteTx.objectStore(NOTES_STORE);
-      await new Promise(r => { noteStore.clear().onsuccess = r; });
-      if (cloudData.notes) cloudData.notes.forEach((n: any) => noteStore.put(n));
+      const restoreNotes = new Promise<void>((resolve) => {
+        const noteTx = db.transaction(NOTES_STORE, 'readwrite');
+        const noteStore = noteTx.objectStore(NOTES_STORE);
+        noteStore.clear().onsuccess = () => {
+          if (cloudData.notes) {
+            cloudData.notes.forEach((n: any) => noteStore.put(n));
+          }
+          resolve();
+        };
+      });
+
+      await Promise.all([restoreEvents, restoreNotes]);
 
       localStorage.setItem('daymark_last_sync', cloudData.updatedAt.toString());
       window.dispatchEvent(new CustomEvent('daymark-sync-complete'));
       isSyncing = false;
     }
   } catch (e) {
-    // Silently handle pull errors during background checks to prevent console spam
     isSyncing = false;
   }
 };
@@ -210,19 +222,13 @@ const createInitialCloudStorage = async (cloudId: string, initialData: any) => {
   try {
     await fetch(CLOUD_SYNC_URL, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(initialData)
     });
-  } catch (e) {
-    console.warn('Could not initialize cloud storage:', e);
-  }
+  } catch (e) {}
 };
 
 export const performCloudRestore = async (username: string): Promise<void> => {
-  // Generate a predictable but unique ID based on username
   const cloudId = btoa(username).replace(/=/g, '').toLowerCase().substring(0, 24);
   localStorage.setItem('daymark_cloud_id', cloudId);
 
@@ -230,27 +236,23 @@ export const performCloudRestore = async (username: string): Promise<void> => {
 
   try {
     const response = await fetch(`${CLOUD_SYNC_URL}/${cloudId}`);
-    if (!response.ok) {
-      // Create initial container if it doesn't exist
+    if (response.ok) {
+      const data = await response.json();
+      const db = await initDB();
+
+      const eventTx = db.transaction(STORE_NAME, 'readwrite');
+      await new Promise(r => { eventTx.objectStore(STORE_NAME).clear().onsuccess = r; });
+      if (data.events) data.events.forEach((e: any) => eventTx.objectStore(STORE_NAME).put(e));
+
+      const noteTx = db.transaction(NOTES_STORE, 'readwrite');
+      await new Promise(r => { noteTx.objectStore(NOTES_STORE).clear().onsuccess = r; });
+      if (data.notes) data.notes.forEach((n: any) => noteTx.objectStore(NOTES_STORE).put(n));
+
+      localStorage.setItem('daymark_last_sync', data.updatedAt.toString());
+    } else {
       await createInitialCloudStorage(cloudId, { events: [], notes: [], updatedAt: Date.now() });
-      return;
     }
-
-    const data = await response.json();
-    const db = await initDB();
-
-    const eventTx = db.transaction(STORE_NAME, 'readwrite');
-    await new Promise(r => { eventTx.objectStore(STORE_NAME).clear().onsuccess = r; });
-    if (data.events) data.events.forEach((e: any) => eventTx.objectStore(STORE_NAME).put(e));
-
-    const noteTx = db.transaction(NOTES_STORE, 'readwrite');
-    await new Promise(r => { noteTx.objectStore(NOTES_STORE).clear().onsuccess = r; });
-    if (data.notes) data.notes.forEach((n: any) => noteTx.objectStore(NOTES_STORE).put(n));
-
-    localStorage.setItem('daymark_last_sync', data.updatedAt.toString());
-  } catch (e) {
-    console.warn('Initial cloud restore was interrupted. Application will operate in local mode.');
-  }
+  } catch (e) {}
 };
 
 export const exportDatabase = async (): Promise<string> => {
@@ -259,6 +261,13 @@ export const exportDatabase = async (): Promise<string> => {
 
 export const importDatabase = async (token: string): Promise<void> => {
   localStorage.setItem('daymark_cloud_id', token);
-  localStorage.setItem('daymark_last_sync', '0'); // Force a pull
+  localStorage.setItem('daymark_last_sync', '0');
   await checkAndPullCloudUpdates();
+};
+
+// Listen for updates from other tabs
+syncChannel.onmessage = (event) => {
+  if (event.data === 'refresh') {
+    window.dispatchEvent(new CustomEvent('daymark-sync-complete'));
+  }
 };
